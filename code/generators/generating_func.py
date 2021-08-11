@@ -17,3 +17,6 @@ class GeneratingFunction(object):
     def jac(self):  # pragma: no cover
         pass
 
+    @abstractmethod
+    def inv(self):  # pragma: no cover
+        pass

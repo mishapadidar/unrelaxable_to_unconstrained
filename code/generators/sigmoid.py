@@ -22,6 +22,7 @@ class Sigmoid(GeneratingFunction):
         :return: Value at x
         :rtype: numpy.array
         """
+        x = np.array(x)
         return 1/(1+np.exp(-self.sigma*x))
 
     def jac(self, x):
@@ -31,5 +32,9 @@ class Sigmoid(GeneratingFunction):
         :return: Value at x
         :rtype: 2D numpy.array
         """
+        x = np.array(x)
         return np.diag(self.sigma*np.exp(-self.sigma*x)/(1+np.exp(-self.sigma*x))**2)
 
+    def inv(self,x):
+        x = np.array(x)
+        return np.log(x/(1-x))
