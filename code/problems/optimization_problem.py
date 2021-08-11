@@ -1,4 +1,4 @@
-import numpy as np
+import abc
 from abc import ABC, abstractmethod
 
 class OptimizationProblem(object):
