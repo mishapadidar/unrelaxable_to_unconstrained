@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize
 import sys
 sys.path.append("../generators/")
 sys.path.append("../problems/")
@@ -15,7 +14,8 @@ f    = Rosenbrock(dim)
 lb   = f.lb
 ub   = f.ub
 # generator
-sig = Sigmoid()
+sigma = 1
+sig = Sigmoid(sigma)
 # merit
 ft = lambda xx: f(from_unit_cube(sig(xx),lb,ub))
 # plotting bounds for merit; captures epsilon-tightened feasible region
