@@ -15,7 +15,14 @@ class OptimizationProblem(object):
         if len(x) != self.dim:
             raise ValueError("Dimension mismatch")
 
+    def __call__(self,xx):
+      return self.eval(xx)
+
     @abstractmethod
     def eval(self):  # pragma: no cover
+        pass
+
+    @abstractmethod
+    def grad(self): 
         pass
 
