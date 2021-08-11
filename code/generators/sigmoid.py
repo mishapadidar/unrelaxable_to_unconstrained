@@ -37,4 +37,4 @@ class Sigmoid(GeneratingFunction):
 
     def inv(self,x):
         x = np.array(x)
-        return np.log(x/(1-x))
+        return np.log(x/(1-x))/self.sigma
