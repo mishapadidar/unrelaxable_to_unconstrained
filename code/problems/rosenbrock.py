@@ -47,10 +47,9 @@ class Rosenbrock(OptimizationProblem):
 
     def grad(self,x):
         total = np.zeros(self.dim)
-        I = np.eye(self.dim)
-        for i in range(len(x) - 1):
-            ei = I[i]
-            eip1 = I[1+1]
-            total += 200 * (x[i] ** 2 - x[i + 1])*(-2*x[i]*ei + eip1)  + 2*(x[i] - 1)*ei
+        for j in range(1,self.dim-1):
+            total[j] = 400*(x[j]**3 - x[j+1]*x[j]) + 2*(x[j]-1) - 200*(x[j-1]**2-x[j])
+        total[0]  = 200*(x[0]**2 - x[1])*2*x[0] + 2*(x[0]-1)
+        total[-1] = - 200*(x[-2]**2-x[-1])
         return total
 
