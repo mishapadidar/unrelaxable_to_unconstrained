@@ -10,6 +10,7 @@ class OptimizationProblem(object):
         self.dim = None
         self.lb = None
         self.ub = None
+        self.minimum = None
 
     def __check_input__(self, x):
         if len(x) != self.dim:
@@ -19,10 +20,14 @@ class OptimizationProblem(object):
       return self.eval(xx)
 
     @abstractmethod
-    def eval(self):  # pragma: no cover
-        pass
+    def eval(self,xx):  # pragma: no cover
+        raise NotImplementedError()
 
     @abstractmethod
-    def grad(self): 
-        pass
+    def grad(self,xx): 
+        raise NotImplementedError()
+
+    @abstractmethod
+    def hess(self,xx): 
+        raise NotImplementedError()
 
