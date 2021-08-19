@@ -62,7 +62,7 @@ for ii,x in enumerate(X):
 ax1.set_xlim(lb[0]-shift,ub[0]+shift)
 ax1.set_ylim(lb[1]-shift,ub[1]+shift)
 ax1.contour(X,Y,Z,100)
-#ax1.scatter(*rosen.minimum,color='r')
+ax1.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',color='r')
 ax1.set_title('$f(x)$')
 
 # plot penalty
@@ -79,6 +79,7 @@ contours = np.sort(np.unique(contours))
 ax2.set_xlim(lb[0]-shift,ub[0]+shift)
 ax2.set_ylim(lb[1]-shift,ub[1]+shift)
 ax2.contour(X,Y,Z,levels=contours)
+ax2.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',color='r')
 ax2.set_title('Penalty')
 
 # plot relfection
@@ -88,6 +89,7 @@ for ii,x in enumerate(X):
   for jj,y in enumerate(Y):
     Z[ii,jj] = fref(np.array([X[ii,jj],Y[ii,jj]]))
 ax3.contour(X,Y,Z,100)
+ax3.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',color='r')
 ax3.set_title('Reflection')
 
 # plot ft
@@ -97,7 +99,7 @@ for ii,x in enumerate(X):
   for jj,y in enumerate(Y):
     Z[ii,jj] = ft(np.array([X[ii,jj],Y[ii,jj]]))
 ax4.contour(X,Y,Z,100)
-#ax4.scatter(*sig.inv(to_unit_cube(rosen.minimum,lb,ub)),color='r')
+ax4.scatter(*sig.inv(to_unit_cube(rosen.minimum,lbr,ubr)),marker='*',color='r')
 ax4.set_title('Dilation')
 
 fig.tight_layout(pad=2.0)
