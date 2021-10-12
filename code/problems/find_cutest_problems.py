@@ -20,6 +20,9 @@ for pname in problems:
     # remove probs that are too high dim
     elif prob.n > 1000:
       continue
+    # remove low dim problems
+    elif prob.n < 3:
+      continue
     # ensure there are no other constraints
     elif prob.m != 0:
       continue
@@ -32,9 +35,9 @@ for pname in problems:
     attrib['objective'] = prop['objective']
     # optimize to find the activities
     bounds = Bounds(prob.bl,prob.bu)
-    res = minimize(prob.obj,prob.x0,method='L-BFGS-B',bounds=bounds,options={'gtol':1e-5})
+    res = minimize(prob.obj,prob.x0,method='L-BFGS-B',bounds=bounds,options={'gtol':1e-6})
     xopt = res.x
-    atol=1e-3
+    atol=1e-2
     attrib['n_activities'] = np.sum(np.isclose(res.x,prob.bl,atol=atol)) + np.sum(np.isclose(res.x,prob.bu,atol=atol))
     # save the problem
     good_probs.append(attrib)
