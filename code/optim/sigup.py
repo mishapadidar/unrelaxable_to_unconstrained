@@ -77,6 +77,7 @@ def sigup(f,f_grad,lb,ub,y0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,metho
         return zopt
 
     # update sigma
+    eta[eta<1e-8] = 1e-8 # cap the update size
     sigma = gamma*sigma/np.sqrt(eta)
     # reset for next iteration
     y0 = np.copy(yopt)
