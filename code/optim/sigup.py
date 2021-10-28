@@ -11,7 +11,7 @@ Optimization Algorithm using the sigma-update.
 """
 
 
-def sigup(f,f_grad,lb,ub,y0,eps = 1e-8,delta=1e-10,gamma=10.0,method='BFGS',verbose=False):
+def sigup(f,f_grad,lb,ub,y0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,method='BFGS',verbose=False):
   """
   f: function handle, f:[lb,ub] -> R
   f_grad: the gradient of f
@@ -28,7 +28,7 @@ def sigup(f,f_grad,lb,ub,y0,eps = 1e-8,delta=1e-10,gamma=10.0,method='BFGS',verb
   y0 = to_unit_cube(y0,lb,ub)
 
   # initialize sigma
-  sigma = np.ones(len(y0))
+  sigma = sigma0*np.ones(len(y0))
 
   # stopping criteria
   kkt = False
@@ -62,7 +62,7 @@ def sigup(f,f_grad,lb,ub,y0,eps = 1e-8,delta=1e-10,gamma=10.0,method='BFGS',verb
 
     # exit because gradient is flat
     if np.all(np.abs(g_z)< eps): # exit if gradient is flat
-      return z
+      return zopt
     else: # check the KKT conditions
       lam,mu = compute_lagrange(zopt,g_z)
       kkt = np.all(np.abs(g_z + lam - mu)< eps) and np.all(np.abs(lam*zopt) < eps) and np.all(np.abs(mu*(1-zopt))< eps)
