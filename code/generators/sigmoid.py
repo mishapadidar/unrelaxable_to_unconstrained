@@ -51,8 +51,7 @@ class Sigmoid(GeneratingFunction):
     def inv(self,x):
         x = np.array(x)
         # truncate for stability
-        tol = 1e-12
-        trunc = 1e-8
-        x[x<tol] = trunc
-        x[1-x<tol] = 1-trunc
+        tol = 1e-10
+        x[x<tol] = tol
+        x[1-x<tol] = 1-tol
         return (np.log(x) - np.log(1-x))/self.sigma
