@@ -31,7 +31,8 @@ class Sigmoid(GeneratingFunction):
         idx_pos = x>0
         s[idx_pos] = 1/(1+np.exp(-self.sigma[idx_pos]*x[idx_pos]))
         idx_neg = x<=0.0
-        s[idx_neg] = np.exp(self.sigma[idx_neg]*x[idx_neg]) / ( 1. + np.exp(self.sigma[idx_neg]*x[idx_neg]) )
+        z= np.exp(self.sigma[idx_neg]*x[idx_neg])
+        s[idx_neg] = z/(1.+z)
 
         return s
 
@@ -43,8 +44,15 @@ class Sigmoid(GeneratingFunction):
         :rtype: 2D numpy.array
         """
         x = np.array(x)
-        return np.diag(self.sigma*np.exp(-self.sigma*x)/(1+np.exp(-self.sigma*x))**2)
+        #return np.diag(self.sigma*np.exp(-self.sigma*x)/(1+np.exp(-self.sigma*x))**2)
+        y = self.eval(x)
+        return np.diag(self.sigma*y*(1-y))
 
     def inv(self,x):
         x = np.array(x)
-        return np.log(x/(1-x))/self.sigma
+        # truncate for stability
+        tol = 1e-12
+        trunc = 1e-8
+        x[x<tol] = trunc
+        x[1-x<tol] = 1-trunc
+        return (np.log(x) - np.log(1-x))/self.sigma
