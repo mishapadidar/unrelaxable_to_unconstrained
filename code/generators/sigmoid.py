@@ -22,8 +22,18 @@ class Sigmoid(GeneratingFunction):
         :return: Value at x
         :rtype: numpy.array
         """
+        if isinstance(self.sigma,float):
+            self.sigma = self.sigma*np.ones(len(x))
         x = np.array(x)
-        return 1/(1+np.exp(-self.sigma*x))
+        s = np.zeros_like(x)
+
+        # stable computation of sigmoid
+        idx_pos = x>0
+        s[idx_pos] = 1/(1+np.exp(-self.sigma[idx_pos]*x[idx_pos]))
+        idx_neg = x<=0.0
+        s[idx_neg] = np.exp(self.sigma[idx_neg]*x[idx_neg]) / ( 1. + np.exp(self.sigma[idx_neg]*x[idx_neg]) )
+
+        return s
 
     def jac(self, x):
         """Evaluate the sigmoid jacobian at x
