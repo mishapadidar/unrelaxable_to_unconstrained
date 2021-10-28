@@ -13,8 +13,12 @@ dim  = 2
 #ub   = f.ub
 lb = np.zeros(dim)
 ub = np.ones(dim)
-yopt = np.ones(dim) + np.array([-1e-7,1e-1])
+
 #yopt = np.ones(dim) 
+yopt = np.ones(dim) + np.array([-1e-7,1e-1])
+#yopt = np.ones(dim) - np.array([1e-7,1e-1])
+#yopt = np.ones(dim) - np.array([0.5,0.0])
+#yopt = np.ones(dim) + np.array([0.5,0.0])
 A = np.diag(np.array([100,2]))
 f = ConvexQuadratic(lb,ub,A,yopt)
 
@@ -27,8 +31,8 @@ method = 'BFGS'
 verbose=True
 
 # optimize
-xopt,yopt = sigup(f,f.grad,lb,ub,y0,eps = eps,gamma=gamma,n_solves=n_solves,method=method,verbose=verbose)
+z = sigup(f,f.grad,lb,ub,y0,eps = eps,gamma=gamma,method=method,verbose=verbose)
 
-print("Optimal Value is ",f(yopt))
-print("Minima Found is ",yopt)
-print("Distance to Optima: ",np.linalg.norm(yopt- f.minimum))
+print("Optimal Value is ",f(z))
+print("Minima Found is ",z)
+print("Distance to Optima: ",np.linalg.norm(z- f.minimum))
