@@ -22,6 +22,12 @@ def sigup(f,f_grad,lb,ub,y0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,metho
   n_solves: number of times to resolve
   """
   np.set_printoptions(precision=16)
+ 
+  # update caps
+  cap_sigma = 1e14 # maximum sigma
+  cap_eta   = 1e-10 # minimum eta: to push away from the boundary
+
+  # problem dimension
   dim = len(y0)
 
   # only work on the unit cube
@@ -76,9 +82,14 @@ def sigup(f,f_grad,lb,ub,y0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,metho
         print(np.abs(mu*(1-zopt)))
         return zopt
 
+    if np.all(sigma > cap_sigma-1):
+      print("Breaking: max sigma reached")
+      return zopt
+
     # update sigma
-    eta[eta<1e-8] = 1e-8 # cap the update size
+    eta[eta<1e-8] = cap_eta # cap the update size
     sigma = gamma*sigma/np.sqrt(eta)
+    sigma = np.minimum(sigma,cap_sigma)
     # reset for next iteration
     y0 = np.copy(yopt)
 

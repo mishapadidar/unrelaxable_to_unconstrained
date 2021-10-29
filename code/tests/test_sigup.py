@@ -10,25 +10,28 @@ from convex_quadratic import ConvexQuadratic
 from eval_wrapper import eval_wrapper
 from sigup import sigup
 
-dim  = 10
+dim  = 2
 
+# problem 1
 #lb = np.zeros(dim)
 #ub = np.ones(dim)
 #yopt = np.ones(dim) + np.array([-1e-7,0.5])
 #A = np.diag(np.array([100,2]))
 #f = ConvexQuadratic(lb,ub,A,yopt)
+
+# problem 2
 f = Rosenbrock(dim)
 
 # optimizer params
 y0 = (f.lb+f.ub)/2
-n_solves = 10
+#y0 = np.random.uniform(f.lb,f.ub)
 gamma = 1.0
-eps = 1e-7
+eps = 1e-10
 method = 'BFGS'
 verbose=True
 
 # optimize
-sigmas = [0.01,0.1,1.0,10.0]
+sigmas = [0.01,0.1,1.0,10.0,100.0,1000.0]
 for sigma0 in sigmas:
   func = eval_wrapper(f,dim)
   z = sigup(func,f.grad,f.lb,f.ub,y0,sigma0=sigma0,eps = eps,gamma=gamma,method=method,verbose=verbose)
@@ -53,8 +56,8 @@ print("Minima Found is ",z)
 print("Distance to Optima: ",np.linalg.norm(z- f.minimum))
 plt.plot(np.minimum.accumulate(fX),linewidth=3,color='k',label='L-BFGS-B')
 
-#plt.yscale('log')
-#plt.xscale('log')
+plt.xscale('log')
+plt.yscale('log')
 plt.ylabel("f(x)")
 plt.xlabel("Number of function evaluations")
 plt.legend()
