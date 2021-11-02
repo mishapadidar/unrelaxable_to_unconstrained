@@ -7,23 +7,23 @@ from rosenbrock import Rosenbrock
 from convex_quadratic import ConvexQuadratic
 
 dim  = 2
-#f = Rosenbrock(dim)
-# f    = Quadratic1(dim)
-#lb   = f.lb
-#ub   = f.ub
-lb = np.zeros(dim)
-ub = np.ones(dim)
 
+# problem 1
+f = Rosenbrock(dim)
+
+# problem 2
 #yopt = np.ones(dim) 
-yopt = np.ones(dim) + np.array([-1e-7,1e-1])
+#yopt = np.ones(dim) + np.array([-1e-7,1e-1])
 #yopt = np.ones(dim) - np.array([1e-7,1e-1])
 #yopt = np.ones(dim) - np.array([0.5,0.0])
 #yopt = np.ones(dim) + np.array([0.5,0.0])
-A = np.diag(np.array([100,2]))
-f = ConvexQuadratic(lb,ub,A,yopt)
+#A = np.diag(np.array([100,2]))
+#lb = np.zeros(dim)
+#ub = np.ones(dim)
+#f = ConvexQuadratic(lb,ub,A,yopt)
 
 # optimizer params
-y0 = (lb+ub)/2
+y0 = (f.lb+f.ub)/2
 n_solves = 10
 gamma = 1.0
 eps = 1e-9
@@ -31,7 +31,7 @@ method = 'BFGS'
 verbose=True
 
 # optimize
-z = sigup(f,f.grad,lb,ub,y0,eps = eps,gamma=gamma,method=method,verbose=verbose)
+z = sigup(f,f.grad,f.lb,f.ub,y0,eps = eps,gamma=gamma,method=method,verbose=verbose)
 
 print("Optimal Value is ",f(z))
 print("Minima Found is ",z)
