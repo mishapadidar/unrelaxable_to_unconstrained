@@ -12,3 +12,19 @@ def fdiff_jac(f,x0,h=1e-6):
   Fm   = np.array([f(e) for e in Em])
   jac = (Fp - Fm)/(h)
   return jac.T
+
+if __name__=="__main__":
+    dim = 3
+    A = np.random.randn(dim)
+    func = lambda x: A @ x
+    x0 = np.random.randn(dim)
+    print(A)
+    print(fdiff_jac(func,x0))
+
+    dim = 3
+    A = np.random.randn(dim,dim)
+    func = lambda x: A @ x
+    x0 = np.random.randn(dim)
+    print("")
+    print(A)
+    print(fdiff_jac(func,x0))
