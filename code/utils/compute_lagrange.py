@@ -44,9 +44,22 @@ def compute_lagrange(y,g,lb,ub):
     dmu = -(g+lam-mu) + (ub-y)*(ub-y)@mu
     return np.hstack((dlam,dmu))
 
+  # initial multipliers
+  lam0 = -np.ones(dim_y) # dont want to start on boundary
+  lam0[g>0] = -g[g>0] # so that g + lam - mu ~ 0
+  mu0 = -np.ones(dim_y) # dont want to start on boundary
+  mu0[g<0] = g[g<0] # so that g + lam - mu ~ 0
+  z0 = np.hstack((lam0,mu0))
+  assert np.all(z0<0),"bad initialization"
+  
   # solve
   bounds = Bounds(-np.inf*np.ones(n_con),np.zeros(n_con))
-  res = minimize(f,np.ones(n_con),jac=jac,method="L-BFGS-B",bounds=bounds,options={'gtol':1e-10})
+  gtol = 1e-10
+  ftol = 1e-10
+  maxiter=20000
+  maxfun = 20000
+  res = minimize(f,z0,jac=jac,method="L-BFGS-B",bounds=bounds,options={'gtol':gtol,'ftol':ftol,'maxiter':maxiter,'maxfun':maxfun})
+
   z = res.x
   lam = z[:dim_y]
   mu = z[dim_y:]
@@ -64,16 +77,17 @@ if __name__=="__main__":
   ub = np.ones(dim)
   
   #yopt = np.ones(dim) 
-  yopt = np.zeros(dim) 
+  #yopt = np.zeros(dim) 
   #yopt = np.ones(dim) + np.array([-1e-7,1e-1])
   #yopt = np.ones(dim) - np.array([1e-7,1e-1])
   #yopt = np.ones(dim) - np.array([0.5,0.0])
-  #yopt = np.ones(dim) + np.array([0.5,0.0])
+  yopt = np.ones(dim) + np.array([0.5,0.0])
   A = np.diag(np.array([100,2]))
   f = ConvexQuadratic(lb,ub,A,yopt)
   
   # point
-  y= yopt + 1e-6
+  #y= yopt + 1e-6
+  y = np.ones(dim)
 
   # compute the multipliers
   g = f.grad(y)
@@ -81,6 +95,9 @@ if __name__=="__main__":
   ub = f.ub
   lam,mu = compute_lagrange(y,g,lb,ub)
 
+  print('')
+  print('grad')
+  print(g)
   print('')
   print('lam')
   print(lam)
