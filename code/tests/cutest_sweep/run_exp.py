@@ -29,13 +29,14 @@ sig = Sigmoid()
 
 # sigup parameters
 sig_sigma0 = 0.1
-sig_eps = 0.0 # set to zero for infinite run
-sig_gamma = 1.0
+sig_eps    = 0.0 # set to zero for infinite run
+sig_gamma  = 1.0
 sig_method = "BFGS"
 
 # LBFGS params
 gtol = sig_eps
 ftol = 0.0 # for infinite run
+xtol = 0.0
 maxfun = int(1e6)
 maxiter = int(1e6)
 
@@ -105,7 +106,7 @@ for pname in problems['name']:
   opt.set_maxeval(maxfun)
   opt.set_ftol_rel(ftol)
   opt.set_ftol_abs(ftol)
-  opt.set_xtol_rel(ftol)
+  opt.set_xtol_rel(xtol)
   try:
     #res = minimize(func,y0,jac=grad,method=method,options={'gtol':gtol,'ftol':ftol,'maxiter':maxiter,'maxfun':maxfun})
     #z = res.x
