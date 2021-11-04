@@ -7,6 +7,9 @@ import pickle
 data_loc = "./data/*.pickle"
 filelist = glob.glob(data_loc)
 
+# data profile tolerance
+kkt_tol = 1e-3
+
 profiles = {}
 for ff in filelist:
   # data dictionary
@@ -16,7 +19,12 @@ for ff in filelist:
   for dd in runs: 
     # get number of function evaluations
     method = dd['method']
-    n_evals = len(dd['fX'])
+    kkt = dd['KKT']
+    try:
+      n_evals = np.where(kkt<kkt_tol)[0][0] + 1
+    except:
+      print('could not verify kkt conditions for ',method,'on', prob_data['problem'])
+      n_evals = np.inf
     lhs = n_evals/(dim+1) # lhs of data profile
 
     # save the data
