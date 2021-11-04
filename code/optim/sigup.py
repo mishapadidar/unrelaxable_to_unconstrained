@@ -74,13 +74,14 @@ def sigup(f,f_grad,lb,ub,y0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,metho
       lam,mu = compute_lagrange(zopt,g_z,lb,ub)
       kkt = np.all(np.abs(g_z + lam - mu)< eps) and np.all(np.abs(lam*(zopt-lb)) < eps) and np.all(np.abs(mu*(ub-zopt))< eps)
       if kkt: 
-        print('')
-        print('stationary')
-        print(np.abs(g_z + lam - mu))
-        print('complementary slackenss lambda*y')
-        print(np.abs(lam*(zopt-lb)))
-        print('complementary slackenss mu*(1-y)')
-        print(np.abs(mu*(ub-zopt)))
+        if verbose:
+          print('')
+          print('stationary')
+          print(np.abs(g_z + lam - mu))
+          print('complementary slackenss lambda*y')
+          print(np.abs(lam*(zopt-lb)))
+          print('complementary slackenss mu*(1-y)')
+          print(np.abs(mu*(ub-zopt)))
         return zopt
 
     if np.all(sigma > cap_sigma-1):
