@@ -7,7 +7,7 @@ class Sigmoid(GeneratingFunction):
     """Componentwise Sigmoid function: s(x) = 1/(1+e^(-sigma*x))
     """
 
-    def __init__(self, sigma=1):
+    def __init__(self, sigma=1.0):
         """
         Parameter sigma can be positive float or np.array
         with same length as inputs x.
