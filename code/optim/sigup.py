@@ -12,16 +12,17 @@ Optimization Algorithm using the sigma-update.
 """
 
 
-def sigup(f,f_grad,lb,ub,y0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,method='BFGS',verbose=False):
+def sigup(f,f_grad,lb,ub,z0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,method='BFGS',verbose=False):
   """
   f: function handle, f:[lb,ub] -> R
   f_grad: the gradient of f
   lb,ub: lower and upper bound arrays
-  y0: starting point within [lb,ub]
+  z0: starting point within [lb,ub]
   eps: float, desired gradient tolerance
   gamma: float, increase paarameter for updating sigma
   n_solves: number of times to resolve
   """
+  assert np.all(lb < z0) and np.all(z0 < ub), "bad initialization"
   np.set_printoptions(precision=16)
  
   # update caps
@@ -29,13 +30,19 @@ def sigup(f,f_grad,lb,ub,y0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,metho
   cap_eta   = 1e-10 # minimum eta: to push away from the boundary
 
   # problem dimension
-  dim = len(y0)
+  dim = len(z0)
 
   # only work on the unit cube
-  y0 = to_unit_cube(y0,lb,ub)
+  y0 = to_unit_cube(z0,lb,ub)
 
   # initialize sigma
-  sigma = sigma0*np.ones(len(y0))
+  if sigma0 == 'auto':
+    g0 = f_grad(z0)
+    sigma = np.ones(len(y0))
+    idx = g0 != 0.0
+    sigma[idx] = 1.0/(y0[idx]*(1-y0[idx])*np.abs(g0[idx]))
+  else:
+    sigma = sigma0*np.ones(len(y0))
 
   # stopping criteria
   kkt = False
@@ -49,7 +56,7 @@ def sigup(f,f_grad,lb,ub,y0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,metho
     ft = lambda xx: f(from_unit_cube(gen(xx),lb,ub))
     ft_jac = lambda xx: gen.jac(xx) @ np.diag(ub-lb) @ f_grad(from_unit_cube(gen(xx),lb,ub))
     # optimize
-    res = minimize(ft,x0,jac=ft_jac,method=method,options={'gtol':eps})
+    res = minimize(ft,x0,jac=ft_jac,method=method,options={'gtol':delta})
     xopt = res.x
     # compute y*
     yopt = gen(xopt)
@@ -90,7 +97,8 @@ def sigup(f,f_grad,lb,ub,y0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,metho
 
     # update sigma
     eta[eta<cap_eta] = cap_eta # cap the update size
-    sigma = gamma*sigma/np.sqrt(eta)
+    #sigma = gamma*sigma/np.sqrt(eta)
+    sigma = gamma*sigma/eta
     sigma = np.minimum(sigma,cap_sigma)
     # reset for next iteration
     y0 = np.copy(yopt)
