@@ -10,7 +10,7 @@ def project(y,lb,ub):
   y[idx_low] = lb[idx_low]
   return y
 
-def BFGS_B(func,grad,x0,lb,ub,gamma=0.5,max_iter=1000,gtol=1e-3,c_1=1e-4,c_2=0.9):
+def BFGS_B(func,grad,x0,lb,ub,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,c_2=0.9):
   """
   This is an implementation of the BFGS algorithm (Nocedal and Wright Alg 16.1)
   for solving bound constrained optimization problems with gradients:
