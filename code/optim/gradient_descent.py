@@ -11,13 +11,11 @@ def project(y,lb,ub):
   y[idx_low] = lb[idx_low]
   return y
 
-def check_stop(x_k,g_k,lb,ub,nn,gtol,xtol,max_iter):
+def check_stop(x_k,g_k,lb,ub,nn,gtol,max_iter):
   """
   Check the stopping criteria
   """
-  if np.linalg.norm(project(g_k,lb,ub)) < gtol :
-    return True
-  elif np.linalg.norm(x_k - project(x_k - g_k,lb,ub)) < xtol :
+  if np.max(np.abs(x_k - project(x_k - g_k,lb,ub))) < gtol :
     return True
   elif nn > max_iter:
     return True
@@ -26,7 +24,7 @@ def check_stop(x_k,g_k,lb,ub,nn,gtol,xtol,max_iter):
  
 
 
-def GD(func,grad,x0,lb,ub,gamma=0.5,max_iter=10000,gtol=1e-3,xtol=1e-8,c_1=1e-4):
+def GD(func,grad,x0,lb,ub,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4):
   """
   Projected Gradient descent for bound constrained minimization.
   Optimization will stop if any of the stopping criteria are met.
@@ -71,7 +69,6 @@ def GD(func,grad,x0,lb,ub,gamma=0.5,max_iter=10000,gtol=1e-3,xtol=1e-8,c_1=1e-4)
     # compute step 
     x_kp1 = project(x_k + alpha_k*p_k,lb,ub)
     f_kp1 = func(x_kp1);
-    g_kp1 = np.copy(grad(x_kp1))
 
     # linsearch with Armijo condition
     armijo = f_kp1 <= f_k + c_1*g_k @ (x_kp1 - x_k)
@@ -102,7 +99,7 @@ def GD(func,grad,x0,lb,ub,gamma=0.5,max_iter=10000,gtol=1e-3,xtol=1e-8,c_1=1e-4)
     nn += 1
 
     # check stopping criteria
-    stop = check_stop(x_k,g_k,lb,ub,nn,gtol,xtol,max_iter)
+    stop = check_stop(x_k,g_k,lb,ub,nn,gtol,max_iter)
 
   return x_k
 
