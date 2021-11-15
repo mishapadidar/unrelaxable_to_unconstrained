@@ -113,8 +113,8 @@ def sigup(func,f_grad,lb,ub,z0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,me
 
     # update sigma
     eta[eta<cap_eta] = cap_eta # cap the update size
-    #sigma = gamma*sigma/np.sqrt(eta)
-    sigma = gamma*sigma/eta
+    sigma = gamma*sigma/np.sqrt(eta)
+    #sigma = gamma*sigma/eta
     sigma = np.minimum(sigma,cap_sigma)
     # reset for next iteration
     y0 = np.copy(yopt)
