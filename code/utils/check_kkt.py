@@ -35,6 +35,8 @@ def check_kkt(y,g,lb,ub,eps):
   if False:
     return False, []
   """
+  # check for nans
+  assert not np.any(np.isnan(g)), "gradient has NaN entries"
 
   # check primal feasibility
   if np.all(np.logical_or(y>=lb-eps,y<=ub+eps)): 
@@ -129,6 +131,9 @@ def compute_kkt_tol(y,g,lb,ub,eps=1.0):
   eps: initial guess for kkt tolerance
   return optimal epsilon
   """
+  # check for nans
+  if np.any(np.isnan(g)) or np.any(np.isnan(y)):
+    return np.inf 
 
   # increase/decrease factor for search
   gamma = 2.0
