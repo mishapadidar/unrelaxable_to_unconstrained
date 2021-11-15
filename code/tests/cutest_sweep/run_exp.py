@@ -24,12 +24,10 @@ if os.path.exists(outputdir) is False:
 # load the cutest problems
 problems = pd.read_pickle("../../problems/cutest_problems.pickle")
 
-# generator
-sig = Sigmoid()
-
 # sigup parameters
-sig_sigma0 = 0.1
+sig_sigma0 = 0.01
 sig_eps    = 0.0 # set to zero for infinite run
+sig_delta  = 0.0
 sig_gamma  = 1.0
 sig_method = "BFGS"
 
@@ -41,6 +39,10 @@ maxfun = int(1e6)
 maxiter = int(1e6)
 
 for pname in problems['name']:
+  # skip some problems
+  if "DIAG" in pname or pname =="HADAMALS" or pname=="PROBPENL":
+    continue
+
   print(f"\nproblem: {pname}")
   problem_data = {}
   problem_data['problem'] = pname
@@ -57,11 +59,30 @@ for pname in problems['name']:
   # check y0 and bounds
   assert np.all(lb < ub), "bound violation lb > ub"
   if np.any(lb >= y0) or np.any(y0>= ub):
-    # strict interior point
+    # try to generate a strict interior point
+
+    # try a deterministic guess
     y0 = (lb+ub)/2
+    if np.any(np.isnan(grad(y0))) == False and np.any(np.isnan(obj(y0))) == False:
+      print("y0 is the midpoint of the box")
+    else:
+      # look for a random feasible initial point
+      for attempts in range(1000):
+        y0 = np.random.uniform(lb,ub)
+        if np.any(np.isnan(grad(y0))) == False and np.any(np.isnan(obj(y0))) == False:
+          print("y0 is a random point in the box")
+          break
+      if np.any(np.isnan(grad(y0))) == True or  np.any(np.isnan(obj(y0))) == True:
+        print("Warning: Skipping problem",pname)
+        print("Cant find initial feasible point")
+        continue
+
+  # double check initial point
   assert np.all(lb < y0) and np.all(y0 < ub), "y0 is infeasible"
+  assert np.any(np.isnan(grad(y0))) == False and  np.any(np.isnan(obj(y0))) == False, "y0 has nan objective or grad"
 
   # construct the merit function
+  sig = Sigmoid()
   ft = lambda xx: obj(from_unit_cube(sig(xx),lb,ub))
   ft_grad = lambda xx: sig.jac(xx) @ np.diag(ub-lb) @ grad(from_unit_cube(sig(xx),lb,ub))
 
@@ -72,13 +93,13 @@ for pname in problems['name']:
   method = 'sigup'
   func = eval_wrapper(obj,dim)
   try:
-    z = sigup(func,grad,lb,ub,y0,sigma0=sig_sigma0,eps =sig_eps,gamma=sig_gamma,method=sig_method,verbose=False)
+    z = sigup(func,grad,lb,ub,y0,sigma0=sig_sigma0,eps =sig_eps,delta=sig_delta,gamma=sig_gamma,method=sig_method,verbose=False)
   except:
     z = func.X[-1]
     pass
-  fopt = obj(z)
   X = func.X
   fX = func.fX
+  fopt = np.min(fX)
   print(f"{method}: {fopt}")
   method_data = {}
   method_data['method'] = method
@@ -87,6 +108,7 @@ for pname in problems['name']:
   method_data['sigma0'] = sig_sigma0
   method_data['gamma'] = sig_gamma
   method_data['eps'] = sig_eps
+  method_data['delta'] = sig_delta
   method_data['submethod'] = sig_method
   problem_data['runs'].append(method_data)
 
@@ -114,9 +136,9 @@ for pname in problems['name']:
   except:
     z = func.X[-1]
     pass
-  fopt = obj(z)
   X = func.X
   fX = func.fX
+  fopt = np.min(fX)
   print(f"{method}: {fopt}")
   method_data = {}
   method_data['method'] = method
