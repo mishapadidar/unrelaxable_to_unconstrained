@@ -31,6 +31,9 @@ sig_delta  = 0.0
 sig_gamma  = 1.0
 sig_method = "BFGS"
 
+# sigmoid-fixed
+sigmoid_fixed_sigmas = [0.01,0.1,1.0,10.0]
+
 # LBFGS params
 gtol = sig_eps
 ftol = 0.0 # for infinite run
@@ -81,11 +84,6 @@ for pname in problems['name']:
   assert np.all(lb < y0) and np.all(y0 < ub), "y0 is infeasible"
   assert np.any(np.isnan(grad(y0))) == False and  np.any(np.isnan(obj(y0))) == False, "y0 has nan objective or grad"
 
-  # construct the merit function
-  sig = Sigmoid()
-  ft = lambda xx: obj(from_unit_cube(sig(xx),lb,ub))
-  ft_grad = lambda xx: sig.jac(xx) @ np.diag(ub-lb) @ grad(from_unit_cube(sig(xx),lb,ub))
-
   # collect the dimension
   problem_data['dim'] = dim
 
@@ -112,10 +110,10 @@ for pname in problems['name']:
   method_data['submethod'] = sig_method
   problem_data['runs'].append(method_data)
 
+
   # projected gradient
   method = "L-BFGS-B"
   func = eval_wrapper(obj,dim)
-
   # nlopt objective
   def objective_with_grad(x,g):
     f = func(x)
@@ -144,10 +142,47 @@ for pname in problems['name']:
   method_data['method'] = method
   method_data['X'] = X
   method_data['fX'] = fX
-  method_data['gtol'] = gtol
   problem_data['runs'].append(method_data)
 
+
+  # call sigma method with no update
+  for sigma0 in sigmoid_fixed_sigmas:
+    method = f'sigmoid-fixed-{sigma0}'
+    func = eval_wrapper(obj,dim) # wrap the objective
+    sig = Sigmoid(sigma=sigma0)
+    def objective_with_grad(xx,g):
+      f = func(from_unit_cube(sig(xx),lb,ub))
+      g[:] = sig.jac(xx) @ np.diag(ub-lb) @ grad(from_unit_cube(sig(xx),lb,ub))
+      return f
+    opt = nlopt.opt(nlopt.LD_LBFGS, dim)
+    opt.set_min_objective(objective_with_grad)
+    opt.set_lower_bounds(lb)
+    opt.set_upper_bounds(ub)
+    opt.set_maxeval(maxfun)
+    opt.set_ftol_rel(ftol)
+    opt.set_ftol_abs(ftol)
+    opt.set_xtol_rel(xtol)
+    try:
+      z = opt.optimize(y0)
+    except:
+      z = func.X[-1]
+      pass
+    X = func.X
+    fX = func.fX
+    fopt = np.min(fX)
+    print(f"{method}: {fopt}")
+    method_data = {}
+    method_data['method'] = method
+    method_data['sigma0'] = sigma0
+    method_data['X'] = X
+    method_data['fX'] = fX
+    problem_data['runs'].append(method_data)
+
+  # TODO: call sigup with a fixed update rule
+
   # TODO: call augmented lagrangian
+
+  # TODO: call projection penalty method
 
   # save data
   problem_filename = outputdir + f"{pname}.pickle"
