@@ -57,13 +57,13 @@ def check_kkt(y,g,lb,ub,eps):
     if idx_mu[ii] == True:
       # compute the inequalities
       # check for true activity
-      if ub[ii] == y[ii]:
+      if ub[ii] == y[ii]: 
         ub_mu = min(0.0,eps+g[ii])
         lb_mu = g[ii]-eps
       else:
-        sgn = np.sign(ub[ii]-y[ii])
-        ub_mu = min(0.0,eps+g[ii],sgn*eps/(ub[ii]-y[ii]))
-        lb_mu = max(g[ii]-eps,-sgn*eps/(ub[ii]-y[ii]))
+        ub_mu = min(0.0,eps+g[ii])
+        # TODO: this is the only potentially unstable calculation
+        lb_mu = max(g[ii]-eps,-np.abs(eps/(ub[ii]-y[ii])))
       # check kkt 
       if lb_mu > ub_mu:
         return False,[]
@@ -78,9 +78,9 @@ def check_kkt(y,g,lb,ub,eps):
         ub_lam = min(0.0,eps-g[ii])
         lb_lam = -eps-g[ii]
       else:
-        sgn = np.sign(y[ii]-lb[ii])
-        ub_lam = min(0.0,eps-g[ii],sgn*eps/(y[ii]-lb[ii]))
-        lb_lam = max(-eps-g[ii],-sgn*eps/(y[ii]-lb[ii]))
+        ub_lam = min(0.0,eps-g[ii])
+        # TODO: this is the only potentially unstable calculation
+        lb_lam = max(-eps-g[ii],-np.abs(eps/(y[ii]-lb[ii])))
       # check kkt 
       if lb_lam > ub_lam:
         return False,[]
