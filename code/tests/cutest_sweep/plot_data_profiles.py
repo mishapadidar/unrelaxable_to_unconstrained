@@ -27,7 +27,8 @@ for ff in filelist:
     try:
       n_evals = np.where(kkt<rel_tol)[0][0] + 1
     except:
-      print('could not verify kkt conditions for ',method,'on', prob_data['problem'])
+      print('kkt conditions never satisfied by ',method,'on', prob_data['problem'])
+      print('best kkt value is ',np.min(kkt))
       n_evals = np.inf
     lhs = n_evals/(dim+1) # lhs of data profile
 
