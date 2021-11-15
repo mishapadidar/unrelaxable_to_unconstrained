@@ -45,6 +45,9 @@ for ff in filelist:
       # store the value
       KKT[jj] = kkt
 
+    # save the initial gradient
+    g_z = prob.obj(X[0],gradient=True)[1]
+    method_data["grad_x0"] = np.copy(g_z)
     # save the data
     method_data["KKT"] = KKT
     runs[ii]  = method_data

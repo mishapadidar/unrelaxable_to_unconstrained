@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import glob
 import pickle
+import matplotlib
+#matplotlib.rcParams['text.usetex'] = True
 
 # find the data files
 data_loc = "./data/*.pickle"
@@ -20,8 +22,10 @@ for ff in filelist:
     # get number of function evaluations
     method = dd['method']
     kkt = dd['KKT']
+    # compute the relative tolerance
+    rel_tol = kkt_tol*np.linalg.norm(dd["grad_x0"])
     try:
-      n_evals = np.where(kkt<kkt_tol)[0][0] + 1
+      n_evals = np.where(kkt<rel_tol)[0][0] + 1
     except:
       print('could not verify kkt conditions for ',method,'on', prob_data['problem'])
       n_evals = np.inf
@@ -35,7 +39,7 @@ for ff in filelist:
   
 print(profiles)
 # now compute the profile for each alpha
-alpha = np.linspace(0.1,1000,1000)
+alpha = np.linspace(0.1,40,1000)
 data_profiles = {}
 for method in profiles:
   data_profiles[method] = []
@@ -44,5 +48,7 @@ for method in profiles:
     data_profiles[method].append(frac)
   plt.plot(data_profiles[method],label=method)
 
+plt.title(f"Data profiles for KKT tolerance {kkt_tol}")
+plt.xlabel(r"$\alpha$")
 plt.legend()
 plt.show()
