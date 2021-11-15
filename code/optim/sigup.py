@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import minimize,Bounds
+import nlopt
 import sys
 sys.path.append("../generators/")
 sys.path.append("../utils/")
@@ -12,7 +13,7 @@ Optimization Algorithm using the sigma-update.
 """
 
 
-def sigup(f,f_grad,lb,ub,z0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,method='BFGS',verbose=False):
+def sigup(func,f_grad,lb,ub,z0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,method='BFGS',verbose=False):
   """
   f: function handle, f:[lb,ub] -> R
   f_grad: the gradient of f
@@ -52,12 +53,27 @@ def sigup(f,f_grad,lb,ub,z0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,metho
     gen = Sigmoid(sigma=sigma)
     # compute x0
     x0 = gen.inv(y0)
+
     # merit
-    ft = lambda xx: f(from_unit_cube(gen(xx),lb,ub))
-    ft_jac = lambda xx: gen.jac(xx) @ np.diag(ub-lb) @ f_grad(from_unit_cube(gen(xx),lb,ub))
+    #ft = lambda xx: func(from_unit_cube(gen(xx),lb,ub))
+    #ft_jac = lambda xx: gen.jac(xx) @ np.diag(ub-lb) @ f_grad(from_unit_cube(gen(xx),lb,ub))
     # optimize
-    res = minimize(ft,x0,jac=ft_jac,method=method,options={'gtol':delta})
-    xopt = res.x
+    #res = minimize(ft,x0,jac=ft_jac,method=method,options={'gtol':delta})
+    #xopt = res.x
+
+    # nlopt objective
+    def objective_with_grad(xx,g):
+      ft =func(from_unit_cube(gen(xx),lb,ub))
+      g[:] = gen.jac(xx) @ np.diag(ub-lb) @ f_grad(from_unit_cube(gen(xx),lb,ub))
+      return ft
+    opt = nlopt.opt(nlopt.LD_LBFGS, dim)
+    opt.set_min_objective(objective_with_grad)
+    opt.set_ftol_rel(delta)
+    opt.set_ftol_abs(delta)
+    #opt.set_maxeval(maxfun)
+    #opt.set_xtol_rel(1e-12)
+    xopt = opt.optimize(y0)
+
     # compute y*
     yopt = gen(xopt)
     # compute distance to boundary
