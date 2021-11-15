@@ -95,6 +95,65 @@ def check_kkt(y,g,lb,ub,eps):
   return True,[lam,mu]
 
 
+def compute_kkt_tol(y,g,lb,ub,eps=1.0):
+  """
+  Compute the minimum value epsilon such that
+  the epsilon-approximate kkt conditions hold.
+     min  eps
+     s.t. |gradf + lam -mu| <= eps
+          |lam*(y-lb)| <= eps
+          |mu*(ub-y)| <= eps
+          lam,mu <=0
+          y <= ub + eps
+          y >= lb - eps
+
+  To avoid any problems with poorly conditioned numbers
+  we opt to solely rely on the check_kkt function above
+  rather than solving the LP explicitly. We use a binary 
+  search on eps. Our alg is as follows:
+
+  1. If the initial guess for the minima does not satisfy
+     the epsilon-kkt conditions then increase it until
+     we find an epsilon that does. This will give 
+     us an interval [lb_eps,ub_eps] that contains the optima.
+     The lb_eps will not satisfy the epsilon kkt conditions but
+     ub_eps will satisfy the epsilon kkt conditions.
+  2. Now perform a binary search on [lb_eps, ub_eps] to find the 
+     optima. We stop when ub_eps is approximate 2*lb_eps, i.e.
+     the relative error is (ub_eps-lb_eps)/lb_eps < 1.
+  3. return ub_eps
+  
+  y: point y
+  g: gradient vector grad_f(y)
+  lb,ub: lower and upper bound vectors
+  eps: initial guess for kkt tolerance
+  return optimal epsilon
+  """
+
+  # increase/decrease factor for search
+  gamma = 2.0
+  assert gamma > 1.0,"gamma must be > 1.0"
+
+  # first find an interval containing epsion_opt
+  ub_eps = eps
+  lb_eps = 0.0
+  while check_kkt(y,g,lb,ub,ub_eps)[0] == False:
+    # move the interval
+    lb_eps = ub_eps
+    ub_eps = gamma*ub_eps
+  
+  # now binary search until ub_eps ~ 2lb_eps
+  while (ub_eps-lb_eps) > lb_eps:
+    eps = lb_eps + (ub_eps-lb_eps)/gamma
+    kkt = check_kkt(y,g,lb,ub,eps)[0]
+    if kkt == True:
+      ub_eps = eps
+    else:
+      lb_eps = eps
+
+  return ub_eps
+
+
 if __name__=="__main__":
   import sys
   sys.path.append("../problems/")
@@ -122,7 +181,7 @@ if __name__=="__main__":
   g = f.grad(y)
   lb = f.lb
   ub = f.ub
-  eps = 2e-4
+  eps = 1e-2
   kkt,lagrange = check_kkt(y,g,lb,ub,eps)
   if kkt == True:
     lam,mu = lagrange
@@ -143,3 +202,19 @@ if __name__=="__main__":
     print(np.abs(mu*(ub-y)))
   else:
     print("Not KKT to tol",eps)
+
+  eps_opt = compute_kkt_tol(y,g,lb,ub,eps=1e-8)
+  print("")
+  print("Found optimal eps: ",eps_opt)
+  kkt,lagrange = check_kkt(y,g,lb,ub,eps_opt)
+  lam,mu = lagrange
+  print('lam')
+  print(lam)
+  print('mu')
+  print(mu)
+  print('stationary')
+  print(np.abs(g + lam - mu))
+  print('complementary slackenss lambda*y')
+  print(np.abs(lam*(y-lb)))
+  print('complementary slackenss mu*(1-y)')
+  print(np.abs(mu*(ub-y)))
