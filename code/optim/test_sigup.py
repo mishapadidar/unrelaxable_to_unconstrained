@@ -1,5 +1,5 @@
 import numpy as np
-from sigup import sigup
+from sigup import SIGUP
 import sys
 sys.path.append("../problems/")
 from quadratic1 import Quadratic1
@@ -27,11 +27,12 @@ y0 = (f.lb+f.ub)/2
 n_solves = 10
 gamma = 1.0
 eps = 1e-9
-method = 'BFGS'
 verbose=True
 
 # optimize
-z = sigup(f,f.grad,f.lb,f.ub,y0,eps = eps,gamma=gamma,method=method,verbose=verbose)
+solver = SIGUP(f,f.grad,f.lb,f.ub,y0,eps = eps,delta=eps,gamma=gamma)
+z = solver.solve(verbose=verbose)
+
 
 print("Optimal Value is ",f(z))
 print("Minima Found is ",z)
