@@ -16,7 +16,7 @@ dim  = 2
 # problem 1
 lb = np.zeros(dim)
 ub = np.ones(dim)
-yopt = np.ones(dim) + np.array([-1e-7,0.5])
+yopt = np.ones(dim) + np.array([1e-2,0.5])
 A = np.diag(np.array([100,2]))
 f = ConvexQuadratic(lb,ub,A,yopt)
 
