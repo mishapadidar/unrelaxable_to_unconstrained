@@ -35,7 +35,7 @@ sig_update_method = "adaptive"
 # sigmoid-fixed
 sigmoid_fixed_sigmas = [0.01,0.1,1.0,10.0]
 
-# LBFGS params
+# BFGS params
 gtol = sig_eps
 ftol = 0.0 # for infinite run
 xtol = 0.0
@@ -63,26 +63,20 @@ for pname in problems['name']:
   # check y0 and bounds
   assert np.all(lb < ub), "bound violation lb > ub"
   if np.any(lb >= y0) or np.any(y0>= ub):
-    # try to generate a strict interior point
-
-    # try a deterministic guess
-    y0 = (lb+ub)/2
+    # generate a strict interior point
+    factor = 1e-3
+    idx_up = y0 >= ub
+    y0[idx_up] = ub[idx_up] -factor*(ub[idx_up]-lb[idx_up])
+    idx_low = y0 <= lb
+    y0[idx_low] = lb[idx_low] +factor*(ub[idx_low]-lb[idx_low])
     if np.any(np.isnan(grad(y0))) == False and np.any(np.isnan(obj(y0))) == False:
-      print("y0 is the midpoint of the box")
+      print("y0 infeasible... using shifted y0")
     else:
-      # look for a random feasible initial point
-      for attempts in range(1000):
-        y0 = np.random.uniform(lb,ub)
-        if np.any(np.isnan(grad(y0))) == False and np.any(np.isnan(obj(y0))) == False:
-          print("y0 is a random point in the box")
-          break
-      if np.any(np.isnan(grad(y0))) == True or  np.any(np.isnan(obj(y0))) == True:
-        print("Warning: Skipping problem",pname)
-        print("Cant find initial feasible point")
-        continue
+      print("ERROR: Cant find feasible y0")
+      quit()
 
   # double check initial point
-  assert np.all(lb < y0) and np.all(y0 < ub), "y0 is infeasible"
+  assert np.all(lb < y0) and np.all(y0 < ub), f"y0 is infeasible {y0}"
   assert np.any(np.isnan(grad(y0))) == False and  np.any(np.isnan(obj(y0))) == False, "y0 has nan objective or grad"
 
   # collect the dimension
@@ -160,14 +154,12 @@ for pname in problems['name']:
       return f
     opt = nlopt.opt(nlopt.LD_LBFGS, dim)
     opt.set_min_objective(objective_with_grad)
-    opt.set_lower_bounds(lb)
-    opt.set_upper_bounds(ub)
     opt.set_maxeval(maxfun)
     opt.set_ftol_rel(ftol)
     opt.set_ftol_abs(ftol)
     opt.set_xtol_rel(xtol)
     try:
-      z = opt.optimize(y0)
+      z = opt.optimize(sig.inv(y0))
     except:
       z = func.X[-1]
       pass
