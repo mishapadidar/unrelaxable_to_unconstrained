@@ -121,7 +121,7 @@ class SIGUP():
         opt.set_ftol_rel(self.delta)
         opt.set_ftol_abs(0.0)
         opt.set_xtol_rel(self.delta)
-        opt.set_xtol_abs(self.delta)
+        #opt.set_xtol_abs(self.delta)
         opt.set_maxeval(int(1e6))
         try:
           # nlopt may fail
