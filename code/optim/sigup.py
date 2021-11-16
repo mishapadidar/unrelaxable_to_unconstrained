@@ -49,7 +49,7 @@ class SIGUP():
 
     # update caps
     self.cap_sigma = 1e14 # maximum sigma
-    self.cap_eta   = 1e-10 # minimum eta: to push away from the boundary
+    self.cap_eta   = 1e-16 # minimum eta: to push away from the boundary
    
     # save the function values
     self.X = np.zeros((0,self.dim))
@@ -122,7 +122,12 @@ class SIGUP():
         opt.set_ftol_abs(self.delta)
         opt.set_xtol_rel(self.delta)
         #opt.set_maxeval(maxfun)
-        xopt = opt.optimize(y0)
+        try:
+          # nlopt may fail
+          xopt = opt.optimize(x0)
+        except:
+          print("EXITING: nlopt failed")
+          return from_unit_cube(yopt,lb,ub)
   
       # compute y*
       yopt = np.copy(gen(xopt))
@@ -149,7 +154,7 @@ class SIGUP():
       if self.update_method == "adaptive":
         eta[eta<self.cap_eta] = self.cap_eta # cap the update size
         sigma = self.gamma*sigma/np.sqrt(eta)
-        #sigma = gamma*sigma/eta
+        #sigma = self.gamma*sigma/eta
         sigma = np.minimum(sigma,self.cap_sigma)
       elif self.update_method == "exp":
         sigma = np.minimum(self.gamma*sigma,self.cap_sigma)
