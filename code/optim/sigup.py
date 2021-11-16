@@ -108,7 +108,7 @@ class SIGUP():
       if self.solve_method == "scipy":
         ft = lambda xx: self.fwrap(from_unit_cube(gen(xx),lb,ub))
         ft_jac = lambda xx: gen.jac(xx) @ np.diag(ub-lb) @ self.f_grad(from_unit_cube(gen(xx),lb,ub))
-        res = minimize(ft,x0,jac=ft_jac,method="BFGS",options={'gtol':self.delta})
+        res = minimize(ft,x0,jac=ft_jac,method="BFGS",options={'gtol':self.delta,'maxiter':1e6})
         xopt = res.x
       elif self.solve_method == "nlopt": 
         # nlopt objective
@@ -119,9 +119,10 @@ class SIGUP():
         opt = nlopt.opt(nlopt.LD_LBFGS, self.dim)
         opt.set_min_objective(objective_with_grad)
         opt.set_ftol_rel(self.delta)
-        opt.set_ftol_abs(self.delta)
+        opt.set_ftol_abs(0.0)
         opt.set_xtol_rel(self.delta)
-        #opt.set_maxeval(maxfun)
+        opt.set_xtol_abs(self.delta)
+        opt.set_maxeval(int(1e6))
         try:
           # nlopt may fail
           xopt = opt.optimize(x0)
@@ -145,7 +146,7 @@ class SIGUP():
         kkt = True
         return zopt
   
-      if np.all(sigma > self.cap_sigma-1):
+      if np.all(sigma >= self.cap_sigma-1):
         if verbose:
           print("Breaking: max sigma reached")
         return zopt
