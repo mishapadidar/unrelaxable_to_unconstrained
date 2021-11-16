@@ -4,6 +4,7 @@ import sys
 sys.path.append("../problems/")
 sys.path.append("../utils/")
 sys.path.append("../optim/")
+from check_kkt import *
 from rosenbrock import Rosenbrock
 from scipy.optimize import minimize,Bounds
 from convex_quadratic import ConvexQuadratic
@@ -25,11 +26,12 @@ f = ConvexQuadratic(lb,ub,A,yopt)
 # optimizer params
 y0 = (f.lb+f.ub)/2
 #y0 = np.random.uniform(f.lb,f.ub)
-gamma = 2.0
-delta = 1e-2
-eps = 1e-10
-solve_method = "scipy"
+gamma = 1.0
+eps = 1e-6
+delta = eps
+solve_method = "nlopt"
 update_method = "adaptive"
+#update_method = "exp"
 verbose=True
 
 # optimize
@@ -60,6 +62,8 @@ print("\nL-BFGS-B")
 print("Optimal Value is ",f(z))
 print("Minima Found is ",z)
 print("Distance to Optima: ",np.linalg.norm(z- f.minimum))
+kkt = compute_kkt_tol(z,f.grad(z),f.lb,f.ub,eps=1.0)
+print("kkt satisfaction:",kkt)
 plt.plot(np.minimum.accumulate(fX),linewidth=3,color='k',label='L-BFGS-B')
 
 plt.xscale('log')
