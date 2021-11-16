@@ -62,8 +62,8 @@ class SIGUP():
     wrap the objective so we can save the values
     """ 
     ff = self.func(xx)
-    self.X = np.append(self.X,[xx],axis=0)
-    self.fX = np.append(self.fX,ff)
+    self.X = np.copy(np.append(self.X,[xx],axis=0))
+    self.fX = np.copy(np.append(self.fX,ff))
     return ff
 
   def solve(self,verbose=False):
@@ -127,8 +127,9 @@ class SIGUP():
           # nlopt may fail
           xopt = opt.optimize(x0)
         except:
-          print("EXITING: nlopt failed")
-          return from_unit_cube(yopt,lb,ub)
+          xopt = np.copy(x0)
+          #print("EXITING: nlopt failed")
+          #return from_unit_cube(yopt,lb,ub)
   
       # compute y*
       yopt = np.copy(gen(xopt))
