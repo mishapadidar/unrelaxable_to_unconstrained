@@ -159,7 +159,7 @@ for pname in problems['name']:
     opt.set_ftol_abs(ftol)
     opt.set_xtol_rel(xtol)
     try:
-      z = opt.optimize(sig.inv(y0))
+      z = opt.optimize(sig.inv(to_unit_cube(y0,lb,ub)))
     except:
       z = func.X[-1]
       pass
