@@ -25,7 +25,7 @@ if os.path.exists(outputdir) is False:
 problems = pd.read_pickle("../../problems/cutest_problems.pickle")
 
 # sigup parameters
-sig_sigma0 = 0.01
+sig_sigma0 = 0.001
 sig_eps    = 0.0 # set to zero for infinite run
 sig_delta  = 0.0 # use finite value so we update sigma
 sig_gamma  = 1.0
@@ -33,7 +33,7 @@ sig_solve_method = "nlopt"
 sig_update_method = "adaptive"
 
 # sigmoid-fixed
-sigmoid_fixed_sigmas = [0.01,0.1,1.0,10.0]
+sigmoid_fixed_sigmas = [0.001,0.01,0.1,1.0,10.0]
 
 # BFGS params
 gtol = sig_eps
@@ -44,7 +44,7 @@ maxiter = int(1e6)
 
 for pname in problems['name']:
   # skip some problems
-  if "DIAG" in pname or pname =="HADAMALS" or pname=="PROBPENL":
+  if "DIAG" in pname or pname =="HADAMALS" or pname=="PROBPENL" or pname=="POWELLBC":
     continue
 
   print(f"\nproblem: {pname}")
@@ -83,14 +83,15 @@ for pname in problems['name']:
   problem_data['dim'] = dim
 
   # call sigup
-  method = 'sigup'
+  method = f'sigup-{sig_sigma0}'
   sigup = SIGUP(obj,grad,lb,ub,y0,eps = sig_eps,delta=sig_delta,gamma=sig_gamma,sigma0=sig_sigma0,
           solve_method=sig_solve_method,update_method=sig_update_method)
-  try:
-    #z = sigup(func,grad,lb,ub,y0,sigma0=sig_sigma0,eps =sig_eps,delta=sig_delta,gamma=sig_gamma,method=sig_method,verbose=False)
-    z = sigup.solve()
-  except:
-    z = sigup.X[np.argmin(sigup.fX)]
+  z = sigup.solve()
+  #try:
+  #  #z = sigup(func,grad,lb,ub,y0,sigma0=sig_sigma0,eps =sig_eps,delta=sig_delta,gamma=sig_gamma,method=sig_method,verbose=False)
+  #  z = sigup.solve()
+  #except:
+  #  z = sigup.X[np.argmin(sigup.fX)]
   X = sigup.X
   fX = sigup.fX
   fopt = np.min(fX)
