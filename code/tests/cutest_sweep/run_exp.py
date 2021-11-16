@@ -12,7 +12,7 @@ sys.path.append("../../optim/")
 sys.path.append("../../utils/")
 from rescale import *
 from sigmoid import Sigmoid
-from sigup import sigup
+from sigup import SIGUP
 from eval_wrapper import eval_wrapper
 #import augmented_lagrangian
 
@@ -27,9 +27,10 @@ problems = pd.read_pickle("../../problems/cutest_problems.pickle")
 # sigup parameters
 sig_sigma0 = 0.01
 sig_eps    = 0.0 # set to zero for infinite run
-sig_delta  = 0.0
+sig_delta  = 0.0 # use finite value so we update sigma
 sig_gamma  = 1.0
-sig_method = "BFGS"
+sig_solve_method = "nlopt"
+sig_update_method = "adaptive"
 
 # sigmoid-fixed
 sigmoid_fixed_sigmas = [0.01,0.1,1.0,10.0]
@@ -89,25 +90,28 @@ for pname in problems['name']:
 
   # call sigup
   method = 'sigup'
-  func = eval_wrapper(obj,dim)
+  sigup = SIGUP(obj,grad,lb,ub,y0,eps = sig_eps,delta=sig_delta,gamma=sig_gamma,sigma0=sig_sigma0,
+          solve_method=sig_solve_method,update_method=sig_update_method)
   try:
-    z = sigup(func,grad,lb,ub,y0,sigma0=sig_sigma0,eps =sig_eps,delta=sig_delta,gamma=sig_gamma,method=sig_method,verbose=False)
+    #z = sigup(func,grad,lb,ub,y0,sigma0=sig_sigma0,eps =sig_eps,delta=sig_delta,gamma=sig_gamma,method=sig_method,verbose=False)
+    z = sigup.solve()
   except:
-    z = func.X[-1]
-    pass
-  X = func.X
-  fX = func.fX
+    z = sigup.X[np.argmin(sigup.fX)]
+  X = sigup.X
+  fX = sigup.fX
   fopt = np.min(fX)
   print(f"{method}: {fopt}")
+  print(f"num_updates: {len(sigup.updates)}")
   method_data = {}
   method_data['method'] = method
+  method_data['solve_method'] = sig_solve_method
+  method_data['update_method'] = sig_update_method
   method_data['X'] = X
   method_data['fX'] = fX
   method_data['sigma0'] = sig_sigma0
   method_data['gamma'] = sig_gamma
   method_data['eps'] = sig_eps
   method_data['delta'] = sig_delta
-  method_data['submethod'] = sig_method
   problem_data['runs'].append(method_data)
 
 
