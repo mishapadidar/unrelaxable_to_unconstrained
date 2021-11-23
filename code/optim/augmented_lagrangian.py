@@ -1,10 +1,6 @@
-from scipy.optimize import minimize,Bounds
-from bfgs_b import BFGS_B
+from scipy.optimize import minimize
 from gradient_descent import GD
 import numpy as np
-import sys
-sys.path.append("../utils")
-from finite_difference import *
 
 class AugmentedLagrangian():
   """
@@ -157,7 +153,9 @@ class AugmentedLagrangian():
  
     for k in range(self.max_iter):
         # minimize the lagrangian
-        x_kp1 = GD(self.lagrangian,self.lagrangian_grad,x_k,gtol=self.gtol,max_iter=self.solver_max_iter)
+        #x_kp1 = GD(self.lagrangian,self.lagrangian_grad,x_k,gtol=self.gtol,max_iter=self.solver_max_iter)
+        res = minimize(self.lagrangian,x_k,jac=self.lagrangian_grad,method='BFGS',options={'gtol':self.gtol})
+        x_kp1 = res.x
 
         # evaluate the constraints
         cc = np.maximum(self.con(x_kp1),0.0)

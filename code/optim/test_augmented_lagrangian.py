@@ -13,8 +13,8 @@ dim  = 2
 # problem 2
 #yopt = np.ones(dim) 
 #yopt = np.ones(dim) + np.array([-1e-7,1e-1])
-yopt = np.ones(dim) - np.array([1e-7,1e-1])
-#yopt = np.ones(dim) - np.array([0.5,0.0])
+#yopt = np.ones(dim) - np.array([1e-7,1e-1])
+yopt = np.ones(dim) - np.array([0.5,0.0])
 #yopt = np.ones(dim) + np.array([0.5,0.0])
 A = np.diag(np.array([100,2]))
 lb = np.zeros(dim)
