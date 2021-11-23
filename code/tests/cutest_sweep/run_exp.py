@@ -25,15 +25,16 @@ if os.path.exists(outputdir) is False:
 problems = pd.read_pickle("../../problems/cutest_problems.pickle")
 
 # sigup parameters
-sig_sigma0 = 0.001
+sig_sigma0_method = 'fixed'
+sig_sigma0 = 1e-3
 sig_eps    = 0.0 # set to zero for infinite run
 sig_delta  = 0.0 # use finite value so we update sigma
-sig_gamma  = 1.0
+sig_gamma  = 10.0
 sig_solve_method = "nlopt"
 sig_update_method = "adaptive"
 
 # sigmoid-fixed
-sigmoid_fixed_sigmas = [0.001,0.01,0.1,1.0,10.0]
+sigmoid_fixed_sigmas = ['adaptive',0.001,0.01,0.1,1.0,10.0]
 
 # BFGS params
 gtol = sig_eps
@@ -85,7 +86,7 @@ for pname in problems['name']:
   # call sigup
   method = f'sigup-{sig_sigma0}'
   sigup = SIGUP(obj,grad,lb,ub,y0,eps = sig_eps,delta=sig_delta,gamma=sig_gamma,sigma0=sig_sigma0,
-          solve_method=sig_solve_method,update_method=sig_update_method)
+          solve_method=sig_solve_method,update_method=sig_update_method,sigma0_method=sig_sigma0_method)
   z = sigup.solve()
   #try:
   #  #z = sigup(func,grad,lb,ub,y0,sigma0=sig_sigma0,eps =sig_eps,delta=sig_delta,gamma=sig_gamma,method=sig_method,verbose=False)
@@ -147,6 +148,9 @@ for pname in problems['name']:
   # call sigma method with no update
   for sigma0 in sigmoid_fixed_sigmas:
     method = f'sigmoid-fixed-{sigma0}'
+    if sigma0 == 'adaptive':
+      yy = to_unit_cube(y0,lb,ub)
+      sigma0 = 1.0/(yy*(1-yy))
     func = eval_wrapper(obj,dim) # wrap the objective
     sig = Sigmoid(sigma=sigma0)
     def objective_with_grad(xx,g):
