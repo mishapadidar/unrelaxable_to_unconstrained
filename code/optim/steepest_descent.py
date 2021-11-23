@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def SD(func,grad,jac,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
+def SD(func,grad,jac,x0,gamma=0.5,max_iter=10000,gtol=1e-3,ftol_rel=1e-10,c_1=1e-4,verbose=False):
   """
   Steepest descent with armijo linesearch for minimization of the sigmoidal
   connection function 
@@ -72,11 +72,17 @@ def SD(func,grad,jac,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=Fals
 
       # break if alpha is too small
       if alpha_k <= alpha_min:
-        print('Exiting: alpha too small.')
+        if verbose:
+          print('Exiting: alpha too small.')
         return x_k
 
     # gradient
     g_kp1 = np.copy(grad(x_kp1))
+
+    if (f_k-f_kp1)/f_k < ftol_rel: 
+      if verbose:
+        print("Exiting: ftol_rel reached")
+      stop = True
 
     # reset for next iteration
     x_k  = np.copy(x_kp1)
@@ -88,8 +94,12 @@ def SD(func,grad,jac,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=Fals
 
     # stopping criteria
     if np.linalg.norm(g_k) <= gtol:
+      if verbose:
+        print("Exiting: gtol reached")
       stop = True
     elif nn > max_iter:
+      if verbose:
+        print("Exiting: max_iter reached")
       stop = True
 
   return x_k
