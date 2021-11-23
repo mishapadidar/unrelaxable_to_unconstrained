@@ -61,7 +61,8 @@ def GD(func,grad,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
 
       # break if alpha is too small
       if alpha_k <= alpha_min:
-        print('Exiting: alpha too small.')
+        if verbose:
+          print('Exiting: alpha too small.')
         return x_k
 
     # gradient
