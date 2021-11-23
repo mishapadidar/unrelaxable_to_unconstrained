@@ -1,13 +1,22 @@
 import numpy as np
 
 
-def GD(func,grad,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
+def SD(func,grad,jac,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
   """
-  Gradient descent with armijo linesearch.
+  Steepest descent with armijo linesearch for minimization of the sigmoidal
+  connection function 
+    min_x ft(x) = f(Sigmoid(x))
+
+  The step sequence is 
+    x_k+1 = x_k - alpha*(J^TJ)^{-1}grad(ft)
+          = x_k - alpha/(sigma*y_k*(1-y_k)) * grad(ft)
+    where y_k = Sigmoid(x_k) and J is the jacobian of the sigmoid.
+
   Optimization will stop if any of the stopping criteria are met.
 
-  func: objective function handle, for minimization
-  grad: gradient handle
+  func: objective function handle, for minimization of f(sigmoid(x))
+  grad: gradient handle of f(sigmoid(x))
+  jac: jacobian handle for sigmoid.
   x0: feasible starting point
   gamma: linesearch decrease parameter
   max_iter: maximimum number of iterations
@@ -30,6 +39,8 @@ def GD(func,grad,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
   g_k    = np.copy(grad(x_k))
   # compute function value
   f_k    = np.copy(func(x_k))
+  # vectorized jacobian
+  J_k    = np.copy(np.diag(jac(x_k)))
 
   # stop when gradient is flat (within tolerance)
   nn = 0
@@ -41,7 +52,7 @@ def GD(func,grad,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
     alpha_k = alpha_k/gamma
 
     # compute search direction
-    p_k = - g_k
+    p_k = - (1.0/J_k/J_k)*g_k
 
     # compute step 
     x_kp1 = x_k + alpha_k*p_k

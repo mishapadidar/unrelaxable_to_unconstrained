@@ -1,14 +1,38 @@
 import numpy as np
 
-
-def GD(func,grad,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
+def project(y,lb,ub):
   """
-  Gradient descent with armijo linesearch.
+  project a vector y onto [lb,ub]
+  """
+  y = np.copy(y) # prevent aliasing
+  idx_up = y> ub
+  y[idx_up] = ub[idx_up]
+  idx_low = y< lb
+  y[idx_low] = lb[idx_low]
+  return y
+
+def check_stop(x_k,g_k,lb,ub,nn,gtol,max_iter):
+  """
+  Check the stopping criteria
+  """
+  if np.max(np.abs(x_k - project(x_k - g_k,lb,ub))) < gtol :
+    return True
+  elif nn > max_iter:
+    return True
+  else:
+    return False
+ 
+
+
+def GD(func,grad,x0,lb,ub,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4):
+  """
+  Projected Gradient descent for bound constrained minimization.
   Optimization will stop if any of the stopping criteria are met.
 
   func: objective function handle, for minimization
   grad: gradient handle
   x0: feasible starting point
+  lb, ub: lower and upper bound arrays
   gamma: linesearch decrease parameter
   max_iter: maximimum number of iterations
   gtol: projected gradient tolerance
@@ -16,6 +40,7 @@ def GD(func,grad,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
            must satisfy 0 < c_1 < c_2 < 1
   """
   assert 0 < c_1 and c_1< 1, "unsuitable linesearch parameters"
+  assert np.all(lb<=x0) and np.all(x0<=ub),"need feasible starting point"
 
   # inital guess
   x_k = np.copy(x0)
@@ -35,8 +60,6 @@ def GD(func,grad,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
   nn = 0
   stop = False
   while stop==False:
-    if verbose:
-      print(f_k,np.linalg.norm(g_k))
     # increase alpha to counter backtracking
     alpha_k = alpha_k/gamma
 
@@ -44,7 +67,7 @@ def GD(func,grad,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
     p_k = - g_k
 
     # compute step 
-    x_kp1 = x_k + alpha_k*p_k
+    x_kp1 = project(x_k + alpha_k*p_k,lb,ub)
     f_kp1 = func(x_kp1);
 
     # linsearch with Armijo condition
@@ -53,7 +76,7 @@ def GD(func,grad,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
       # reduce our step size
       alpha_k = gamma*alpha_k;
       # take step
-      x_kp1 = np.copy(x_k + alpha_k*p_k)
+      x_kp1 = np.copy(project(x_k + alpha_k*p_k,lb,ub))
       # f_kp1
       f_kp1 = func(x_kp1);
       # compute the armijo condition
@@ -75,11 +98,8 @@ def GD(func,grad,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
     # update iteration counter
     nn += 1
 
-    # stopping criteria
-    if np.linalg.norm(g_k) <= gtol:
-      stop = True
-    elif nn > max_iter:
-      stop = True
+    # check stopping criteria
+    stop = check_stop(x_k,g_k,lb,ub,nn,gtol,max_iter)
 
   return x_k
 
