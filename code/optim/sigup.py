@@ -1,19 +1,20 @@
 import numpy as np
 from scipy.optimize import minimize,Bounds
+from gradient_descent import GD
+from steepest_descent import SD
 import nlopt
 import sys
 sys.path.append("../generators/")
 sys.path.append("../utils/")
 #from compute_lagrange import compute_lagrange
-from check_kkt import compute_kkt_tol
+from check_kkt import compute_kkt_tol,check_kkt
 from sigmoid import Sigmoid
 from rescale import *
 
 
 class SIGUP():
 
-  def __init__(self,func,f_grad,lb,ub,z0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,solve_method="nlopt",
-    update_method="adaptive"):
+  def __init__(self,func,f_grad,lb,ub,z0,sigma0 = 1.0,eps = 1e-8,delta=1e-10,gamma=10.0,solve_method="nlopt",sigma0_method='adaptive', update_method="adaptive"):
     """
     Sigup is an optimization method for solving nonlinear bound constrained problems
       min_x f(x) s.t lb < x< ub
@@ -31,8 +32,9 @@ class SIGUP():
     """
     assert np.all(lb < z0) and np.all(z0 < ub), "bad initialization"
     assert np.all(np.isfinite(lb)) and np.all(np.isfinite(ub)), "need finite bounds"
-    assert solve_method in ["nlopt","scipy"], "improper solve method"
+    assert solve_method in ["nlopt","scipy","GD","SD"], "improper solve method"
     assert update_method in ["adaptive","exp"], "improper update method"
+    assert sigma0_method in ['fixed','adaptive'], "improper sigma0 method"
     
     self.func = func
     self.f_grad = f_grad
@@ -40,6 +42,7 @@ class SIGUP():
     self.ub = ub
     self.z0 = z0
     self.sigma0 = sigma0
+    self.sigma0_method  = sigma0_method
     self.eps = eps
     self.delta = delta
     self.gamma = gamma
@@ -87,17 +90,19 @@ class SIGUP():
     y0 = to_unit_cube(self.z0,lb,ub)
   
     # initialize sigma
-    if self.sigma0 == 'auto':
-      g0 = f_grad(self.z0)
-      sigma = np.ones(len(y0))
-      idx = g0 != 0.0
-      sigma[idx] = 1.0/(y0[idx]*(1-y0[idx])*np.abs(g0[idx]))
-    else:
+    if self.sigma0_method == 'adaptive':
+      sigma = self.sigma0/(y0*(1-y0))
+    elif self.sigma0_method == "fixed":
       sigma = self.sigma0*np.ones(len(y0))
   
     # stopping criteria
     kkt = False
+    # initial kkt violation
+    kkt0 = compute_kkt_tol(self.z0,self.f_grad(self.z0),lb,ub,eps=1.0)
+    if verbose:
+      print("kkt0: ",kkt0)
   
+    n_step = 1
     while kkt == False:
       # generator
       gen = Sigmoid(sigma=np.copy(sigma))
@@ -127,9 +132,18 @@ class SIGUP():
           # nlopt may fail
           xopt = opt.optimize(x0)
         except:
-          xopt = np.copy(x0)
+          zopt = self.X[np.argmin(self.fX)]
+          xopt = gen.inv(to_unit_cube(zopt,lb,ub))
           #print("EXITING: nlopt failed")
           #return from_unit_cube(yopt,lb,ub)
+      elif self.solve_method == "GD":
+        ft = lambda xx: self.fwrap(from_unit_cube(gen(xx),lb,ub))
+        ft_jac = lambda xx: gen.jac(xx) @ np.diag(ub-lb) @ self.f_grad(from_unit_cube(gen(xx),lb,ub))
+        xopt = GD(ft,ft_jac,x0,gamma=0.5,max_iter=1e5,gtol=self.delta,verbose=False)
+      elif self.solve_method == "SD":
+        ft = lambda xx: self.fwrap(from_unit_cube(gen(xx),lb,ub))
+        ft_jac = lambda xx: gen.jac(xx) @ np.diag(ub-lb) @ self.f_grad(from_unit_cube(gen(xx),lb,ub))
+        xopt = SD(ft,ft_jac,gen.jac,x0,gamma=0.5,max_iter=1e4,gtol=self.delta,ftol_rel=1e-8,verbose=False)
   
       # compute y*
       yopt = np.copy(gen(xopt))
@@ -143,7 +157,7 @@ class SIGUP():
       kkt_eps = compute_kkt_tol(zopt,g_z,lb,ub,eps=1.0)
       if verbose:
         print(f"f(x): {self.func(zopt)}, kkt satisfaction: {kkt_eps}")
-      if kkt_eps <= self.eps: 
+      if kkt_eps <= self.eps*kkt0: 
         kkt = True
         return zopt
   
@@ -156,7 +170,7 @@ class SIGUP():
       if self.update_method == "adaptive":
         eta[eta<self.cap_eta] = self.cap_eta # cap the update size
         sigma = self.gamma*sigma/np.sqrt(eta)
-        #sigma = self.gamma*sigma/eta
+        #sigma = (self.gamma**n_step)*self.sigma0/(eta*(1-eta))
         sigma = np.minimum(sigma,self.cap_sigma)
       elif self.update_method == "exp":
         sigma = np.minimum(self.gamma*sigma,self.cap_sigma)
@@ -166,6 +180,7 @@ class SIGUP():
 
       # save the index of the update
       self.updates.append(len(self.fX)-1)
+      n_step +=1
   
     return zopt
 
