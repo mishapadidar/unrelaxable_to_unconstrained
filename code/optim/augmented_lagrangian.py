@@ -55,6 +55,7 @@ class AugmentedLagrangian():
     # lagrange multipliers
     self.lam = np.zeros(self.dim_lam)
     self.mu_factor = mu_factor
+    self.mu_max = 1e10
     self.mu  = 10.0
 
   def con(self,x):
@@ -177,7 +178,7 @@ class AugmentedLagrangian():
           # increase penalty param and tighten tolerances
           lam_k = np.copy(lam_k - mu_k*cc)
           self.lam = lam_k # make sure to save lambda
-          mu_k = np.copy(self.mu_factor*mu_k)
+          mu_k = np.copy(np.min(self.mu_factor*mu_k,self.mu_max))
           self.mu = mu_k
 
         # setup for next iteration
