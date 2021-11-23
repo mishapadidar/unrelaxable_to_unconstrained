@@ -58,14 +58,16 @@ def check_kkt(y,g,lb,ub,eps):
   for ii in range(dim):
     if idx_mu[ii] == True:
       # compute the inequalities
+      if y[ii] > ub[ii]: # primal violation
+        ub_mu = min(0.0,eps+g[ii],-eps/(ub[ii]-y[ii]))
+        lb_mu = max(-eps+g[ii],eps/(ub[ii]-y[ii]))
+      elif y[ii] < ub[ii]: # primal feasible
+        ub_mu = min(0.0,eps + g[ii],eps/(ub[ii]-y[ii]))
+        lb_mu = max(-eps+g[ii],-eps/(ub[ii]-y[ii]))
       # check for true activity
-      if ub[ii] == y[ii]: 
+      elif ub[ii] == y[ii]: 
         ub_mu = min(0.0,eps+g[ii])
-        lb_mu = g[ii]-eps
-      else:
-        ub_mu = min(0.0,eps+g[ii])
-        # TODO: this is the only potentially unstable calculation
-        lb_mu = max(g[ii]-eps,-np.abs(eps/(ub[ii]-y[ii])))
+        lb_mu = -eps+g[ii]
       # check kkt 
       if lb_mu > ub_mu:
         return False,[]
@@ -75,14 +77,16 @@ def check_kkt(y,g,lb,ub,eps):
 
     elif idx_lam[ii] == True:
       # compute the inequalities
+      if y[ii] < lb[ii]: # primal violation
+        ub_lam = min(0.0,eps-g[ii],-eps/(y[ii] - lb[ii]))
+        lb_lam = max(-eps-g[ii],eps/(y[ii]-lb[ii]))
+      elif y[ii] > lb[ii]: # primal feasible
+        ub_lam = min(0.0,eps - g[ii],eps/(y[ii]-lb[ii]))
+        lb_lam = max(-eps-g[ii],-eps/(y[ii]-lb[ii]))
       # check for true activity
-      if y[ii] - lb[ii]  ==0.0:
+      elif lb[ii] == y[ii]: 
         ub_lam = min(0.0,eps-g[ii])
         lb_lam = -eps-g[ii]
-      else:
-        ub_lam = min(0.0,eps-g[ii])
-        # TODO: this is the only potentially unstable calculation
-        lb_lam = max(-eps-g[ii],-np.abs(eps/(y[ii]-lb[ii])))
       # check kkt 
       if lb_lam > ub_lam:
         return False,[]
@@ -147,8 +151,8 @@ def compute_kkt_tol(y,g,lb,ub,eps=1.0):
     lb_eps = ub_eps
     ub_eps = gamma*ub_eps
   
-  # now binary search until ub_eps ~ 2lb_eps
-  while (ub_eps-lb_eps) > lb_eps:
+  # now binary search until ub_eps < (1+1e-3)*lb_eps
+  while (ub_eps-lb_eps) > 1e-3*lb_eps:
     eps = lb_eps + (ub_eps-lb_eps)/gamma
     kkt = check_kkt(y,g,lb,ub,eps)[0]
     if kkt == True:
