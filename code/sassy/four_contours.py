@@ -10,7 +10,6 @@ from quadratic1 import Quadratic1
 from rescale import *
 import matplotlib
 
-plt.rc('text', usetex=True)
 plt.rc('text.latex', preamble=r'\usepackage{amsmath,bm}')
 matplotlib.rcParams.update({'font.size': 16})
 
@@ -44,7 +43,7 @@ fpen = lambda x: f(proj(x)) + mu*np.linalg.norm(x-proj(x))
 fref = lambda x: f(from_unit_cube(2*np.abs(to_unit_cube(x,lb,ub)/2 - np.floor(to_unit_cube(x,lb,ub)/2+0.5)),lb,ub)) + mu*np.linalg.norm(x-proj(x))
 
 # dilation
-sigma = 1
+sigma = 1.0
 sig = Sigmoid(sigma)
 ft = lambda xx: f(from_unit_cube(sig(xx),lb,ub))
 # plotting bounds for merit; captures epsilon-tightened feasible region
@@ -80,7 +79,7 @@ ax2.set_xlim(lb[0]-shift,ub[0]+shift)
 ax2.set_ylim(lb[1]-shift,ub[1]+shift)
 ax2.contour(X,Y,Z,levels=contours)
 ax2.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',color='r')
-ax2.set_title('Penalty')
+ax2.set_title('Projection')
 
 # plot relfection
 X,Y = np.meshgrid(np.linspace(lb[0]-shift,ub[0]+shift,100), np.linspace(lb[1]-shift,ub[1]+shift,100))
@@ -100,7 +99,7 @@ for ii,x in enumerate(X):
     Z[ii,jj] = ft(np.array([X[ii,jj],Y[ii,jj]]))
 ax4.contour(X,Y,Z,100)
 ax4.scatter(*sig.inv(to_unit_cube(rosen.minimum,lbr,ubr)),marker='*',color='r')
-ax4.set_title('Dilation')
+ax4.set_title('Sigmoid')
 
 fig.tight_layout(pad=2.0)
 plt.show()
