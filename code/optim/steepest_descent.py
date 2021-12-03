@@ -97,7 +97,7 @@ def SD(func,grad,jac,x0,gamma=0.5,max_iter=10000,gtol=1e-3,ftol_rel=1e-10,c_1=1e
       if verbose:
         print("Exiting: gtol reached")
       stop = True
-    elif nn > max_iter:
+    elif nn >= max_iter:
       if verbose:
         print("Exiting: max_iter reached")
       stop = True
