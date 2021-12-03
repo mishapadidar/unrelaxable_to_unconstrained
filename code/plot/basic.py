@@ -14,7 +14,7 @@ f    = Rosenbrock(dim)
 lb   = f.lb
 ub   = f.ub
 # generator
-sigma = 1
+sigma = 1.
 sig = Sigmoid(sigma)
 # merit
 ft = lambda xx: f(from_unit_cube(sig(xx),lb,ub))
