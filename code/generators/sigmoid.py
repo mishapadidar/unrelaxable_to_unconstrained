@@ -48,6 +48,30 @@ class Sigmoid(GeneratingFunction):
         y = self.eval(x)
         return np.diag(self.sigma*y*(1-y))
 
+    def jac_inv(self, x):
+        """Evaluate the inverse sigmoid jacobian at x
+        :param x: Data point
+        :type x: numpy.array
+        :return: Value at x
+        :rtype: 2D numpy.array
+        """
+        x = np.array(x)
+        #ret = np.exp(self.sigma*x) + np.exp(-self.sigma*x) + 2
+        #return np.diag(ret/self.sigma)
+        y = self.eval(x)
+        return np.diag(1/y/(1-y)/self.sigma)
+
+    def hess_vec(self,x):
+        """Evaluate the sigmoid vector of second derivatives.
+        :param x: Data point
+        :type x: numpy.array
+        :return: vector of second derivatives, sigma^2*S(x)(1-S(x))(1-2S(x))
+        :rtype: 1D numpy.array
+        """
+        x = np.array(x)
+        y = self.eval(x)
+        return self.sigma*self.sigma*y*(1-y)*(1-2*y)
+
     def inv(self,x):
         x = np.array(x)
         # truncate for stability
