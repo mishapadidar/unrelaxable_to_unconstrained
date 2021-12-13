@@ -22,7 +22,8 @@ class AugmentedLagrangian():
   x: dim, lam: 2*dim, mu: 1
   """
 
-  def __init__(self,func,grad,lb,ub,mu_factor=10,gtol=1e-3,ctol=1e-3,max_iter=1000):
+  def __init__(self,func,grad,lb,ub,mu_factor=10,gtol=1e-3,ctol=1e-3,max_iter=1000,
+    solver_max_iter=1e4,verbose=False):
     """
     func: objective function
     grad: gradient of the objective
@@ -41,10 +42,11 @@ class AugmentedLagrangian():
     self.gtol = gtol
     self.ctol = ctol
     self.max_iter = max_iter
+    self.verbose = verbose
 
     # solver tolerances
-    self.method = "BFGS-B"
-    self.solver_max_iter = int(1e5)
+    self.solver_max_iter = int(solver_max_iter)
+    self.rel_gtol = gtol
 
     # helpful sizes
     self.dim_x = len(lb)
@@ -155,7 +157,9 @@ class AugmentedLagrangian():
     for k in range(self.max_iter):
         # minimize the lagrangian
         #x_kp1 = GD(self.lagrangian,self.lagrangian_grad,x_k,gtol=self.gtol,max_iter=self.solver_max_iter)
-        res = minimize(self.lagrangian,x_k,jac=self.lagrangian_grad,method='BFGS',options={'gtol':self.gtol})
+        # TODO: use gtol or rel_gtol?
+        res = minimize(self.lagrangian,x_k,jac=self.lagrangian_grad,method='BFGS',
+              options={'gtol':gtol,'maxiter':self.solver_max_iter})
         x_kp1 = res.x
 
         # evaluate the constraints
@@ -165,7 +169,8 @@ class AugmentedLagrangian():
         # projected gradient
         pg = self.projected_grad(x_kp1,Lg,self.lb,self.ub)
   
-        print(f'{k+1}) f: {self.func(x_kp1)}, c: {np.linalg.norm(cc)}, pg: {np.linalg.norm(pg)}')
+        if self.verbose:
+          print(f'{k+1}) f: {self.func(x_kp1)}, c: {np.linalg.norm(cc)}, pg: {np.linalg.norm(pg)}')
         # stop if we satisfy convergence and constraint violation tol
         if np.linalg.norm(cc) <=self.ctol: # check constraint satisfaction
           if np.linalg.norm(pg) <= self.gtol: 
@@ -178,8 +183,10 @@ class AugmentedLagrangian():
           # increase penalty param and tighten tolerances
           lam_k = np.copy(lam_k - mu_k*cc)
           self.lam = lam_k # make sure to save lambda
-          mu_k = np.copy(np.min(self.mu_factor*mu_k,self.mu_max))
+          mu_k = np.copy(np.min([self.mu_factor*mu_k,self.mu_max]))
           self.mu = mu_k
+          # increase the relative gtol with mu
+          self.rel_gtol = self.mu_factor*self.gtol
 
         # setup for next iteration
         x_k = np.copy(x_kp1)
