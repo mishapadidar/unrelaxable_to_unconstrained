@@ -10,11 +10,12 @@ import pandas as pd
 sys.path.append("../../generators/")
 sys.path.append("../../optim/")
 sys.path.append("../../utils/")
+from project import project
 from rescale import *
 from sigmoid import Sigmoid
 from sigup import SIGUP
+from gradient_descent import GD
 from eval_wrapper import eval_wrapper
-#import augmented_lagrangian
 
 # directory to dump data
 outputdir = "./data/"
@@ -179,11 +180,59 @@ for pname in problems['name']:
     method_data['fX'] = fX
     problem_data['runs'].append(method_data)
 
-  # TODO: call sigup with a fixed update rule
-
-  # TODO: call augmented lagrangian
-
-  # TODO: call projection penalty method
+  # call projection penalty method
+  method = "PPM"
+  func = eval_wrapper(obj,dim)
+  proj_pen = lambda xx: func(project(xx,lb,ub)) + np.linalg.norm(xx - project(xx,lb,ub))
+  def proj_pen_grad(xx):
+    """
+    Gradient of the projected penalty
+      f(project(x)) + ||x - project(x)||
+  
+    The second term has derivative 
+      . (x-project(x))/||x-project(x)|| if x not feasible
+      . 0 if x is feasible 
+    The first term has derivative
+      . grad(x) if x is interior point 
+      . project(x-grad(x))-x (projected gradient) if x is on the boundary
+      . if x is exterior:
+        we compute the set of indexes where project(x) != x. Motion
+        along these indexes does not change the projection.
+        So these derivatives are zero. In the other indexes the derivatives
+        are the projected derivatives at the projected point
+        project(project(x) - grad(project(x))) - project(x)
+  
+    xx: 1d array, point
+    return: subgradient g such that -g is a 
+           descent direction.
+    """
+    if np.all(xx<ub) and np.all(xx>lb):
+      # interior point: grad = grad
+      return grad(xx)
+    elif np.all(xx<=ub) and np.all(xx>=lb):
+      # boundary point: grad = projected gradient
+      return project(xx - grad(xx),lb,ub) - xx
+    else:
+      # exterior point
+      px = project(xx,lb,ub)
+      # indexes where a motion will not change the projection
+      idx_null = np.where(px != xx)[0]
+      # compute the projected gradient at the projected point
+      gg = project(px - grad(px),lb,ub) - px
+      gg[idx_null] = 0.0
+      gg += (xx-px)/np.linalg.norm(xx-px)
+      return gg
+  # nlopt objective
+  xopt = GD(proj_pen,proj_pen_grad,y0,max_iter=40000,gtol=1e-10,verbose=False)
+  X = func.X
+  fX = func.fX
+  fopt = np.min(fX)
+  print(f"{method}: {fopt}")
+  method_data = {}
+  method_data['method'] = method
+  method_data['X'] = X
+  method_data['fX'] = fX
+  problem_data['runs'].append(method_data)
 
   # save data
   problem_filename = outputdir + f"{pname}.pickle"

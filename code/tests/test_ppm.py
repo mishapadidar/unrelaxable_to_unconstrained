@@ -80,6 +80,8 @@ def proj_pen_grad(xx):
     return gg
 
 xopt = GD(proj_pen,proj_pen_grad,x0,max_iter=30000,gtol=1e-8,verbose=False)
+# project xopt
+xopt = project(xopt,lb,ub)
 
 print("Optimal Value is ",obj(xopt))
 print("Minima Found is ",xopt)
