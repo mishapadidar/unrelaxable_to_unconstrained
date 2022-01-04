@@ -2,6 +2,7 @@ from bfgs_b import BFGS_B
 import numpy as np
 import sys
 sys.path.append("../problems/")
+from rosenbrock import Rosenbrock
 from convex_quadratic import ConvexQuadratic
 from steepest_descent import SD
 from gradient_descent import GD
@@ -10,15 +11,21 @@ sys.path.append("../generators/")
 from rescale import *
 from sigmoid import Sigmoid
 
-
+# problem 1
 dim = 10
-yopt = np.random.uniform(0,1,dim)
-#yopt = np.ones(dim) +np.random.randn(dim)
-Q = np.random.randn(dim,dim)
-A = Q @ Q.T + 0.1*np.eye(dim)
-lb = np.zeros(dim)
-ub = np.ones(dim)
-f = ConvexQuadratic(lb,ub,A,yopt)
+f = Rosenbrock(dim)
+lb = f.lb
+ub = f.ub
+
+# problem 2
+#dim = 10
+#yopt = np.random.uniform(0,1,dim)
+##yopt = np.ones(dim) +np.random.randn(dim)
+#Q = np.random.randn(dim,dim)
+#A = Q @ Q.T + 0.1*np.eye(dim)
+#lb = np.zeros(dim)
+#ub = np.ones(dim)
+#f = ConvexQuadratic(lb,ub,A,yopt)
 
 # initial pint
 z0 = np.random.uniform(lb,ub)
@@ -31,7 +38,7 @@ x0 = gen.inv(y0)
 
 # optimizer stuff
 gtol = 1e-10
-max_iter=1000
+max_iter=10000
 
 # solve
 ff = lambda yy: f(from_unit_cube(yy,lb,ub))
