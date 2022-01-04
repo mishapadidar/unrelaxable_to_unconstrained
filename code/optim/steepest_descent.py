@@ -1,7 +1,9 @@
 import numpy as np
 
+def dist_to_boundary(yy):
+  return np.min(np.minimum(yy,1-yy))
 
-def SD(func,grad,jac,x0,gamma=0.5,max_iter=10000,gtol=1e-3,ftol_rel=1e-10,c_1=1e-4,verbose=False):
+def SD(func,grad,sig,x0,gamma=0.5,max_iter=10000,gtol=1e-3,ftol_rel=1e-10,c_1=1e-4,verbose=False):
   """
   Steepest descent with armijo linesearch for minimization of the sigmoidal
   connection function 
@@ -14,9 +16,9 @@ def SD(func,grad,jac,x0,gamma=0.5,max_iter=10000,gtol=1e-3,ftol_rel=1e-10,c_1=1e
 
   Optimization will stop if any of the stopping criteria are met.
 
-  func: objective function handle, for minimization of f(sigmoid(x))
-  grad: gradient handle of f(sigmoid(x))
-  jac: jacobian handle for sigmoid.
+  func: objective function handle, f
+  grad: gradient handle of grad f
+  sig: handle for sigmoid
   x0: feasible starting point
   gamma: linesearch decrease parameter
   max_iter: maximimum number of iterations
@@ -35,40 +37,45 @@ def SD(func,grad,jac,x0,gamma=0.5,max_iter=10000,gtol=1e-3,ftol_rel=1e-10,c_1=1e
   # initial step size
   alpha_k = 1.0
 
+  y_k = sig(x_k)
   # compute gradient
-  g_k    = np.copy(grad(x_k))
+  g_k    = np.copy(grad(y_k))
   # compute function value
-  f_k    = np.copy(func(x_k))
-  # vectorized jacobian
-  J_k    = np.copy(np.diag(jac(x_k)))
+  f_k    = np.copy(func(y_k))
 
   # stop when gradient is flat (within tolerance)
   nn = 0
   stop = False
   while stop==False:
     if verbose:
-      print(f_k,np.linalg.norm(g_k))
+      print(f_k,np.linalg.norm(g_k),dist_to_boundary(y_k))
     # increase alpha to counter backtracking
     alpha_k = alpha_k/gamma
+    #alpha_k = 1.0
+
+    # vectorized jacobian
+    J_k    = np.copy(np.diag(sig.jac(x_k)))
 
     # compute search direction
-    p_k = - (1.0/J_k/J_k)*g_k
+    p_k = - (1.0/J_k)*g_k
 
     # compute step 
     x_kp1 = x_k + alpha_k*p_k
-    f_kp1 = func(x_kp1);
+    y_kp1 = np.copy(sig(x_kp1))
+    f_kp1 = func(y_kp1);
 
     # linsearch with Armijo condition
-    armijo = f_kp1 <= f_k + c_1*g_k @ (x_kp1 - x_k)
-    while armijo==False:
+    armijo = f_kp1 <= f_k + c_1*J_k*g_k @ (x_kp1 - x_k)
+    while armijo==False or dist_to_boundary(y_kp1)<1e-15:
       # reduce our step size
       alpha_k = gamma*alpha_k;
       # take step
       x_kp1 = np.copy(x_k + alpha_k*p_k)
+      y_kp1 = np.copy(sig(x_kp1))
       # f_kp1
-      f_kp1 = func(x_kp1);
+      f_kp1 = func(y_kp1);
       # compute the armijo condition
-      armijo = f_kp1 <= f_k + c_1*g_k @ (x_kp1 - x_k)
+      armijo = f_kp1 <= f_k + c_1*J_k*g_k @ (x_kp1 - x_k)
 
       # break if alpha is too small
       if alpha_k <= alpha_min:
@@ -77,14 +84,10 @@ def SD(func,grad,jac,x0,gamma=0.5,max_iter=10000,gtol=1e-3,ftol_rel=1e-10,c_1=1e
         return x_k
 
     # gradient
-    g_kp1 = np.copy(grad(x_kp1))
-
-    if (f_k-f_kp1)/f_k < ftol_rel: 
-      if verbose:
-        print("Exiting: ftol_rel reached")
-      stop = True
+    g_kp1 = np.copy(grad(y_kp1))
 
     # reset for next iteration
+    y_k  = np.copy(y_kp1)
     x_k  = np.copy(x_kp1)
     f_k  = f_kp1;
     g_k  = np.copy(g_kp1);
