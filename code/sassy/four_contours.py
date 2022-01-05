@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 import sys
 sys.path.append("../generators/")
 sys.path.append("../problems/")
@@ -30,6 +31,7 @@ shift=0.5
 
 # penalty param for penalty and reflection
 mu = 10
+mu_pen = 1000
 
 # penalty
 def proj(x):
@@ -37,7 +39,7 @@ def proj(x):
   x[x > ub] = ub[x>ub]
   x[x < lb] = lb[x<lb]
   return x
-fpen = lambda x: f(proj(x)) + mu*np.linalg.norm(x-proj(x))
+fpen = lambda x: f(proj(x)) + mu_pen*np.linalg.norm(x-proj(x))
 
 # reflection
 fref = lambda x: f(from_unit_cube(2*np.abs(to_unit_cube(x,lb,ub)/2 - np.floor(to_unit_cube(x,lb,ub)/2+0.5)),lb,ub)) + mu*np.linalg.norm(x-proj(x))
@@ -60,9 +62,15 @@ for ii,x in enumerate(X):
     Z[ii,jj] = f(np.array([X[ii,jj],Y[ii,jj]]))
 ax1.set_xlim(lb[0]-shift,ub[0]+shift)
 ax1.set_ylim(lb[1]-shift,ub[1]+shift)
-ax1.contour(X,Y,Z,100)
-ax1.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',color='r')
+levels=[3.0,50]
+levels=np.append(levels,np.linspace(0.0,np.max(Z),15))
+levels = np.sort(np.unique(levels))
+ax1.contour(X,Y,Z,levels=levels)
+ax1.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',s=80,color='r')
 ax1.set_title('$f(x)$')
+# Create a Rectangle patch
+rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=1,edgecolor='k',facecolor='none',zorder=10)
+ax1.add_patch(rect)
 
 # plot penalty
 n_depth = 600
@@ -71,34 +79,48 @@ Z = np.zeros_like(X)
 for ii,x in enumerate(X):
   for jj,y in enumerate(Y):
     Z[ii,jj] = fpen(np.array([X[ii,jj],Y[ii,jj]]))
-contours = np.linspace(np.min(Z),np.max(Z)+mu*shift,80)
-contours = np.hstack((contours,np.linspace(np.max(Z)-5*mu*shift,np.max(Z)+mu*shift,50)))
-contours = np.hstack((contours,np.linspace(460,460+5*mu*shift,50)))
-contours = np.sort(np.unique(contours))
+levels=[3.0,50]
+levels=np.append(levels,np.linspace(0.0,np.max(Z),20))
+#levels = np.linspace(np.min(Z),np.max(Z)+mu*shift,80)
+#levels = np.hstack((levels,np.linspace(np.max(Z)-5*mu*shift,np.max(Z)+mu*shift,30)))
+#levels = np.hstack((levels,[461,463,464,465,466,467,468,471,472,473,474,475,476]))
+levels = np.sort(np.unique(levels))
 ax2.set_xlim(lb[0]-shift,ub[0]+shift)
 ax2.set_ylim(lb[1]-shift,ub[1]+shift)
-ax2.contour(X,Y,Z,levels=contours)
-ax2.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',color='r')
+ax2.contour(X,Y,Z,levels=levels)
+ax2.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',s=80,color='r')
 ax2.set_title('Projection')
+# Create a Rectangle patch
+rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=1,edgecolor='k',facecolor='none',zorder=10)
+ax2.add_patch(rect)
 
 # plot relfection
-X,Y = np.meshgrid(np.linspace(lb[0]-shift,ub[0]+shift,100), np.linspace(lb[1]-shift,ub[1]+shift,100))
+X,Y = np.meshgrid(np.linspace(lb[0]-shift,ub[0]+shift,200), np.linspace(lb[1]-shift,ub[1]+shift,200))
 Z = np.zeros_like(X)
 for ii,x in enumerate(X):
   for jj,y in enumerate(Y):
     Z[ii,jj] = fref(np.array([X[ii,jj],Y[ii,jj]]))
-ax3.contour(X,Y,Z,100)
-ax3.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',color='r')
+levels=[3.0,50]
+levels=np.append(levels,np.linspace(0.0,np.max(Z),15))
+levels = np.sort(np.unique(levels))
+ax3.contour(X,Y,Z,levels=levels)
+ax3.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',s=80,color='r')
 ax3.set_title('Reflection')
+# Create a Rectangle patch
+rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=1,edgecolor='k',facecolor='none',zorder=10)
+ax3.add_patch(rect)
 
 # plot ft
-X,Y = np.meshgrid(np.linspace(lbt[0],ubt[0],100), np.linspace(lbt[1],ubt[1],100))
+X,Y = np.meshgrid(np.linspace(lbt[0],ubt[0],200), np.linspace(lbt[1],ubt[1],200))
 Z = np.zeros_like(X)
 for ii,x in enumerate(X):
   for jj,y in enumerate(Y):
     Z[ii,jj] = ft(np.array([X[ii,jj],Y[ii,jj]]))
-ax4.contour(X,Y,Z,100)
-ax4.scatter(*sig.inv(to_unit_cube(rosen.minimum,lbr,ubr)),marker='*',color='r')
+levels=[3.0,50]
+levels=np.append(levels,np.linspace(0.0,np.max(Z),15))
+levels = np.sort(np.unique(levels))
+ax4.contour(X,Y,Z,levels=levels)
+ax4.scatter(*sig.inv(to_unit_cube(rosen.minimum,lbr,ubr)),marker='*',s=80,color='r')
 ax4.set_title('Sigmoid')
 
 fig.tight_layout(pad=2.0)
