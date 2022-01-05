@@ -4,13 +4,24 @@ import glob
 import pickle
 import matplotlib
 #matplotlib.rcParams['text.usetex'] = True
+plt.rc('text.latex', preamble=r'\usepackage{amsmath,bm}')
+matplotlib.rcParams.update({'font.size': 18})
+
+def latex_float(f):
+    float_str = "{0:.2g}".format(f)
+    if "e" in float_str:
+        base, exponent = float_str.split("e")
+        #return r"{0} \times 10^{{{1}}}".format(base, int(exponent))
+        return r"10^{{{1}}}".format(base, int(exponent))
+    else:
+        return float_str
 
 # find the data files
 data_loc = "./data/*.pickle"
 filelist = glob.glob(data_loc)
 
 # data profile tolerance
-kkt_tol = 1e-3
+kkt_tol = 1e-8
 
 profiles = {}
 for ff in filelist:
@@ -38,18 +49,37 @@ for ff in filelist:
     else:
       profiles[method] = [lhs]
   
-print(profiles)
+markers = ['s-','.-','o--','^:','+-.','*-']
+skip_methods = ['sigmoid-fixed-adaptive','sigmoid-fixed-0.01','sigmoid-fixed-0.1']
 # now compute the profile for each alpha
 alpha = np.linspace(0.1,40,1000)
 data_profiles = {}
+ii = 0
+plt.figure(figsize=(9,8))
 for method in profiles:
   data_profiles[method] = []
   for aa in alpha:
     frac = np.mean(profiles[method] < aa)
     data_profiles[method].append(frac)
-  plt.plot(data_profiles[method],label=method)
 
-plt.title(f"Data profiles for KKT tolerance {kkt_tol}")
-plt.xlabel(r"$\alpha$")
-plt.legend()
+  # skip some methods
+  if method in skip_methods:
+    continue
+  # make labels
+  label=method
+  if 'sigmoid-fixed' in method:
+    label = method.split("-")[-1]
+    label = '$\sigma = '+label+ "$"
+  elif 'sigup' in method:
+    #label = method.split("-")[-1]
+    #label = 'sigup $\sigma_0 = '+label+ "$"
+    label = 'sigup'
+  plt.plot(data_profiles[method],markers[ii],linewidth=3,markersize=9,label=label,markevery=75)
+  ii +=1
+
+plt.title(r"$\tau= %s$"%latex_float(kkt_tol))
+plt.xlabel(r"Normalized number of function evaluations, $\alpha$",fontsize=20)
+plt.legend(loc=4)
+plt.tight_layout()
+plt.yticks([0.0,0.2,0.4,0.6,0.8,1.0])
 plt.show()
