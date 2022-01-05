@@ -223,7 +223,7 @@ for pname in problems['name']:
       gg += (xx-px)/np.linalg.norm(xx-px)
       return gg
   # nlopt objective
-  xopt = GD(proj_pen,proj_pen_grad,y0,max_iter=40000,gtol=1e-10,verbose=False)
+  xopt = GD(proj_pen,proj_pen_grad,y0,max_iter=20000,gtol=1e-8,verbose=False)
   X = func.X
   fX = func.fX
   fopt = np.min(fX)
