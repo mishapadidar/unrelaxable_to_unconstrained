@@ -37,8 +37,11 @@ for pname in problems:
     bounds = Bounds(prob.bl,prob.bu)
     res = minimize(prob.obj,prob.x0,method='L-BFGS-B',bounds=bounds,options={'gtol':1e-6})
     xopt = res.x
-    atol=1e-2
-    attrib['n_activities'] = np.sum(np.isclose(res.x,prob.bl,atol=atol)) + np.sum(np.isclose(res.x,prob.bu,atol=atol))
+    lb,ub = prob.bl,prob.bu
+    rtol = 1e-3*(ub-lb)
+    attrib['n_activities'] = np.sum(np.abs(xopt -prob.bl) <=rtol) + np.sum(np.abs(xopt-prob.bu)<=rtol)
+    #atol=1e-2
+    #attrib['n_activities'] = np.sum(np.isclose(res.x,prob.bl,atol=atol)) + np.sum(np.isclose(res.x,prob.bu,atol=atol))
     # save the problem
     good_probs.append(attrib)
 
