@@ -35,19 +35,25 @@ sig_solve_method = "nlopt"
 sig_update_method = "adaptive"
 
 # sigmoid-fixed
-sigmoid_fixed_sigmas = ['adaptive',0.001,0.01,0.1,1.0,10.0]
+sigmoid_fixed_sigmas = [0.001,1.0,10.0]
 
 # BFGS params
 gtol = sig_eps
 ftol = 0.0 # for infinite run
 xtol = 0.0
-maxfun = int(1e6)
-maxiter = int(1e6)
+maxfun = int(1e4)
+maxiter = int(1e4)
+
+# PPM params
+ppm_max_iter = 1e4
+ppm_gtol = 1e-8
 
 for pname in problems['name']:
   # skip some problems
   if "DIAG" in pname or pname =="HADAMALS" or pname=="PROBPENL" or pname=="POWELLBC":
     continue
+  #if pname=="PROBPENL":
+  #  continue
 
   print(f"\nproblem: {pname}")
   problem_data = {}
@@ -150,7 +156,7 @@ for pname in problems['name']:
   for sigma0 in sigmoid_fixed_sigmas:
     method = f'sigmoid-fixed-{sigma0}'
     if sigma0 == 'adaptive':
-      yy = to_unit_cube(y0,lb,ub)
+      yy = np.copy(to_unit_cube(y0,lb,ub))
       sigma0 = 1.0/(yy*(1-yy))
     func = eval_wrapper(obj,dim) # wrap the objective
     sig = Sigmoid(sigma=sigma0)
@@ -210,20 +216,21 @@ for pname in problems['name']:
       # interior point: grad = grad
       return grad(xx)
     elif np.all(xx<=ub) and np.all(xx>=lb):
-      # boundary point: grad = projected gradient
-      return project(xx - grad(xx),lb,ub) - xx
+      # boundary point: negative grad = negative projected gradient
+      return -(project(xx - grad(xx),lb,ub) - xx)
     else:
       # exterior point
       px = project(xx,lb,ub)
-      # indexes where a motion will not change the projection
-      idx_null = np.where(px != xx)[0]
-      # compute the projected gradient at the projected point
-      gg = project(px - grad(px),lb,ub) - px
-      gg[idx_null] = 0.0
-      gg += (xx-px)/np.linalg.norm(xx-px)
+      ## indexes where a motion will not change the projection
+      #idx_null = np.where(px != xx)[0]
+      ## compute the projected gradient at the projected point
+      #gg = -(project(px - grad(px),lb,ub) - px) # negative projected gradient (ascent direction)
+      #gg[idx_null] = 0.0
+      #gg += (xx-px)/np.linalg.norm(xx-px)
+      gg = (xx-px)/np.linalg.norm(xx-px)
       return gg
   # nlopt objective
-  xopt = GD(proj_pen,proj_pen_grad,y0,max_iter=20000,gtol=1e-8,verbose=False)
+  xopt = GD(proj_pen,proj_pen_grad,np.copy(y0),max_iter=ppm_max_iter,gtol=ppm_gtol,verbose=False)
   X = func.X
   fX = func.fX
   fopt = np.min(fX)

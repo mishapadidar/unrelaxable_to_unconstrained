@@ -52,7 +52,7 @@ for ff in filelist:
 markers = ['s-','.-','o--','^:','+-.','*-']
 skip_methods = ['sigmoid-fixed-adaptive','sigmoid-fixed-0.01','sigmoid-fixed-0.1']
 # now compute the profile for each alpha
-alpha = np.linspace(0.1,40,1000)
+alpha = np.linspace(0,40,1000)
 data_profiles = {}
 ii = 0
 plt.figure(figsize=(9,8))
@@ -74,7 +74,7 @@ for method in profiles:
     #label = method.split("-")[-1]
     #label = 'sigup $\sigma_0 = '+label+ "$"
     label = 'sigup'
-  plt.plot(data_profiles[method],markers[ii],linewidth=3,markersize=9,label=label,markevery=75)
+  plt.plot(alpha,data_profiles[method],markers[ii],linewidth=3,markersize=9,label=label,markevery=75)
   ii +=1
 
 plt.title(r"$\tau= %s$"%latex_float(kkt_tol))

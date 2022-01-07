@@ -78,8 +78,12 @@ def GD(func,grad,x0,gamma=0.5,max_iter=10000,gtol=1e-3,c_1=1e-4,verbose=False):
 
     # stopping criteria
     if np.linalg.norm(g_k) <= gtol:
+      if verbose:
+        print('Exiting: gtol reached')
       stop = True
     elif nn >= max_iter:
+      if verbose:
+        print('Exiting: max_iter reached')
       stop = True
 
   return x_k
