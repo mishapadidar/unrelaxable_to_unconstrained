@@ -16,9 +16,15 @@ def latex_float(f):
     else:
         return float_str
 
+
 # find the data files
 data_loc = "./data/*.pickle"
 filelist = glob.glob(data_loc)
+print(filelist)
+
+# only use problems with no active constraints at solution
+#inactive = ['CHEBYQAD', 'DEVGLA1B', 'DIAGPQB', 'DIAGPQE', 'DIAGPQT', 'HART6', 'HS110', 'HS38', 'LEVYMONT', 'LEVYMONT10', 'LEVYMONT6', 'LEVYMONT7', 'LEVYMONT8', 'LEVYMONT9', 'POWERSUMB', 'PROBPENL', 'QINGB', 'SANTALS', 'SINEALI', 'SPECAN', 'STRTCHDVB', 'TRIGON1B']
+#filelist = [ff for ff in filelist if ff.split('/')[-1].split('.')[0] in inactive]
 
 # data profile tolerance
 kkt_tol = 1e-8
