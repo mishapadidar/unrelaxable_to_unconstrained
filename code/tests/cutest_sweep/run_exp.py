@@ -16,6 +16,8 @@ from sigmoid import Sigmoid
 from sigup import SIGUP
 from gradient_descent import GD
 from eval_wrapper import eval_wrapper
+sys.path.append("../../../../NQN")
+import NQN
 
 # directory to dump data
 outputdir = "./data/"
@@ -41,19 +43,19 @@ sigmoid_fixed_sigmas = [0.001,1.0,10.0]
 gtol = sig_eps
 ftol = 0.0 # for infinite run
 xtol = 0.0
-maxfun = int(1e4)
-maxiter = int(1e4)
+maxfun = int(15000)
+maxiter = int(15000)
 
 # PPM params
-ppm_max_iter = 1e4
-ppm_gtol = 1e-8
+ppm_max_iter = int(15000)
+ppm_gtol = 1e-10
 
 for pname in problems['name']:
   # skip some problems
-  if "DIAG" in pname or pname =="HADAMALS" or pname=="PROBPENL" or pname=="POWELLBC":
-    continue
-  #if pname=="PROBPENL":
+  #if "DIAG" in pname or pname =="HADAMALS" or pname=="PROBPENL" or pname=="POWELLBC":
   #  continue
+  if pname=="PROBPENL":
+    continue
 
   print(f"\nproblem: {pname}")
   problem_data = {}
@@ -189,48 +191,48 @@ for pname in problems['name']:
   # call projection penalty method
   method = "PPM"
   func = eval_wrapper(obj,dim)
-  proj_pen = lambda xx: func(project(xx,lb,ub)) + np.linalg.norm(xx - project(xx,lb,ub))
+  def dist_pen(xx):
+    yy = np.copy(xx)
+    return np.linalg.norm(yy - np.copy(project(yy,lb,ub)))
+  
+  def proj_pen(xx):
+    yy = np.copy(xx)
+    return func(project(yy,lb,ub)) + dist_pen(yy)
+  
   def proj_pen_grad(xx):
     """
     Gradient of the projected penalty
       f(project(x)) + ||x - project(x)||
   
-    The second term has derivative 
-      . (x-project(x))/||x-project(x)|| if x not feasible
-      . 0 if x is feasible 
-    The first term has derivative
-      . grad(x) if x is interior point 
-      . project(x-grad(x))-x (projected gradient) if x is on the boundary
-      . if x is exterior:
-        we compute the set of indexes where project(x) != x. Motion
-        along these indexes does not change the projection.
-        So these derivatives are zero. In the other indexes the derivatives
-        are the projected derivatives at the projected point
-        project(project(x) - grad(project(x))) - project(x)
-  
     xx: 1d array, point
     return: subgradient g such that -g is a 
            descent direction.
     """
-    if np.all(xx<ub) and np.all(xx>lb):
+    yy = np.copy(xx)
+    bndry_tol=1e-14
+    if np.all(yy<ub-bndry_tol) and np.all(yy>lb+bndry_tol):
       # interior point: grad = grad
-      return grad(xx)
-    elif np.all(xx<=ub) and np.all(xx>=lb):
+      return grad(yy)
+    elif np.all(yy<=ub) and np.all(yy>=lb):
       # boundary point: negative grad = negative projected gradient
-      return -(project(xx - grad(xx),lb,ub) - xx)
+      return -(project(yy - grad(yy),lb,ub) - yy)
     else:
       # exterior point
-      px = project(xx,lb,ub)
-      ## indexes where a motion will not change the projection
-      #idx_null = np.where(px != xx)[0]
-      ## compute the projected gradient at the projected point
-      #gg = -(project(px - grad(px),lb,ub) - px) # negative projected gradient (ascent direction)
-      #gg[idx_null] = 0.0
-      #gg += (xx-px)/np.linalg.norm(xx-px)
-      gg = (xx-px)/np.linalg.norm(xx-px)
-      return gg
-  # nlopt objective
-  xopt = GD(proj_pen,proj_pen_grad,np.copy(y0),max_iter=ppm_max_iter,gtol=ppm_gtol,verbose=False)
+      px = project(yy,lb,ub)
+  
+      Dpi = 0.0*np.zeros_like(yy)
+      idx_int = np.logical_and(yy<ub-bndry_tol,yy>lb+bndry_tol)
+      Dpi[idx_int] = 1.0
+      gg = np.copy(Dpi*grad(project(yy,lb,ub)))
+      gg += (yy-px)/np.linalg.norm(yy-px)
+      return np.copy(gg)
+
+
+  #xopt = GD(proj_pen,proj_pen_grad,np.copy(y0),max_iter=ppm_max_iter,gtol=ppm_gtol,verbose=False)
+  #res = minimize(proj_pen,y0,jac=proj_pen_grad,method="BFGS",options={'gtol':ppm_gtol,'maxiter':ppm_max_iter})
+  #xopt = res.x
+  res = NQN.fmin_l_bfgs_b(proj_pen, y0, proj_pen_grad, bounds=None, m=20, M=1, pgtol=ppm_gtol, iprint=-1, maxfun=ppm_max_iter, maxiter=ppm_max_iter, callback=None, factr=0.)
+  xopt = np.copy(res[0])
   X = func.X
   fX = func.fX
   fopt = np.min(fX)
