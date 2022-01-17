@@ -42,7 +42,7 @@ def proj(x):
 fpen = lambda x: f(proj(x)) + mu_pen*np.linalg.norm(x-proj(x))
 
 # reflection
-fref = lambda x: f(from_unit_cube(2*np.abs(to_unit_cube(x,lb,ub)/2 - np.floor(to_unit_cube(x,lb,ub)/2+0.5)),lb,ub)) + mu*np.linalg.norm(x-proj(x))
+fref = lambda x: f(from_unit_cube(2*np.abs(to_unit_cube(x,lb,ub)/2 - np.floor(to_unit_cube(x,lb,ub)/2+0.5)),lb,ub)) #+ mu*np.linalg.norm(x-proj(x))
 
 # dilation
 sigma = 1.0
@@ -89,7 +89,7 @@ ax2.set_xlim(lb[0]-shift,ub[0]+shift)
 ax2.set_ylim(lb[1]-shift,ub[1]+shift)
 ax2.contour(X,Y,Z,levels=levels)
 ax2.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',s=80,color='r')
-ax2.set_title('Projection')
+ax2.set_title('PPM')
 # Create a Rectangle patch
 rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=1,edgecolor='k',facecolor='none',zorder=10)
 ax2.add_patch(rect)
@@ -105,6 +105,13 @@ levels=np.append(levels,np.linspace(0.0,np.max(Z),15))
 levels = np.sort(np.unique(levels))
 ax3.contour(X,Y,Z,levels=levels)
 ax3.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',s=80,color='r')
+ref_min = to_unit_cube(rosen.minimum,lbr,ubr)
+ref_min2 = np.array([1.0,ref_min[1]])+ (np.array([1.0,ref_min[1]]) - ref_min)
+ref_min3 = np.array([ref_min[0],1.0])+ (np.array([ref_min[1],1.0]) - ref_min)
+ref_min4 = np.ones(2)+ (np.ones(2) - ref_min)
+ax3.scatter(*ref_min2,marker='*',s=80,color='r')
+ax3.scatter(*ref_min3,marker='*',s=80,color='r')
+ax3.scatter(*ref_min4,marker='*',s=80,color='r')
 ax3.set_title('Reflection')
 # Create a Rectangle patch
 rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=1,edgecolor='k',facecolor='none',zorder=10)
