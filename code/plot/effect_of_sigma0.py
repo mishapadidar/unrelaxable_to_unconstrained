@@ -55,7 +55,7 @@ for ii,sigma0 in enumerate(sigmas):
   ax2.plot(range(1,len(fX)+1),fX,markers[ii],linewidth=3,label=f'$\sigma_0: {sigma0}$')
 
 # plot f
-ax1.scatter(*f.minimum,color='r',marker='*',s=100,label='minima',zorder=10)
+ax1.scatter(*f.minimum,color='r',marker='*',s=120,label='minima',zorder=10)
 X,Y = np.meshgrid(np.linspace(lb[0],ub[0],100), np.linspace(lb[1],ub[1],100))
 #ax.contour(X,Y,f([X,Y]),100)
 Z = np.zeros_like(X)
@@ -71,7 +71,7 @@ ax1.legend()
 #ax2.set_xscale('log')
 ax2.set_yscale('log')
 ax2.set_xlabel('Number of Evaluations')
-ax2.set_ylabel(r'$\tilde{f}\, (\mathbf{x})$')
+ax2.set_ylabel(r'$f\,(S(\mathbf{x}))$')
 ax1.legend(loc=9,mode='expand',bbox_to_anchor=(-0.02, 1.02, 1.2, .102),ncol=4,prop={'size': 13})
 ax1.set_xticks([0.0,0.5,1.0])
 ax1.set_yticks([0.0,0.5,1.0])
