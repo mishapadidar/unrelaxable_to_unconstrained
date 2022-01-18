@@ -22,12 +22,18 @@ data_loc = "./data/*.pickle"
 filelist = glob.glob(data_loc)
 print(filelist)
 
-# only use problems with no active constraints at solution
+## only use problems with no active constraints at solution
 #inactive = ['CHEBYQAD', 'DEVGLA1B', 'DIAGPQB', 'DIAGPQE', 'DIAGPQT', 'HART6', 'HS110', 'HS38', 'LEVYMONT', 'LEVYMONT10', 'LEVYMONT6', 'LEVYMONT7', 'LEVYMONT8', 'LEVYMONT9', 'POWERSUMB', 'PROBPENL', 'QINGB', 'SANTALS', 'SINEALI', 'SPECAN', 'STRTCHDVB', 'TRIGON1B']
 #filelist = [ff for ff in filelist if ff.split('/')[-1].split('.')[0] in inactive]
+#print(filelist)
+
+## only use problems with at least one active constraint at solution
+#inactive = ['CHEBYQAD', 'DEVGLA1B', 'DIAGPQB', 'DIAGPQE', 'DIAGPQT', 'HART6', 'HS110', 'HS38', 'LEVYMONT', 'LEVYMONT10', 'LEVYMONT6', 'LEVYMONT7', 'LEVYMONT8', 'LEVYMONT9', 'POWERSUMB', 'PROBPENL', 'QINGB', 'SANTALS', 'SINEALI', 'SPECAN', 'STRTCHDVB', 'TRIGON1B']
+#filelist = [ff for ff in filelist if ff.split('/')[-1].split('.')[0] not in inactive]
+#print(filelist)
 
 # data profile tolerance
-kkt_tol = 1e-8
+kkt_tol = 1e-4
 
 profiles = {}
 for ff in filelist:
@@ -58,7 +64,7 @@ for ff in filelist:
 markers = ['s-','.-','o--','^:','+-.','*-']
 skip_methods = ['sigmoid-fixed-adaptive','sigmoid-fixed-0.01','sigmoid-fixed-0.1']
 # now compute the profile for each alpha
-alpha = np.linspace(0,40,1000)
+alpha = np.linspace(0,100,1000)
 data_profiles = {}
 ii = 0
 plt.figure(figsize=(9,8))
