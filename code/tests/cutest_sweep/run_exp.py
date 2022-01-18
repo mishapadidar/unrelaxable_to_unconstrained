@@ -41,14 +41,12 @@ sigmoid_fixed_sigmas = [0.001,1.0,10.0]
 
 # BFGS params
 gtol = sig_eps
-ftol = 0.0 # for infinite run
-xtol = 0.0
-maxfun = int(15000)
-maxiter = int(15000)
+maxfun = int(20000)
+maxiter = int(20000)
 
 # PPM params
-ppm_max_iter = int(15000)
-ppm_gtol = 1e-10
+ppm_max_iter = int(20000)
+ppm_gtol = 1e-12
 
 for pname in problems['name']:
   # skip some problems
@@ -133,20 +131,23 @@ for pname in problems['name']:
   opt.set_lower_bounds(lb)
   opt.set_upper_bounds(ub)
   opt.set_maxeval(maxfun)
-  opt.set_ftol_rel(ftol)
-  opt.set_ftol_abs(ftol)
-  opt.set_xtol_rel(xtol)
+  opt.set_ftol_abs(0)
+  opt.set_ftol_rel(0)
+  opt.set_xtol_abs(0)
+  opt.set_xtol_rel(0)
   try:
-    #res = minimize(func,y0,jac=grad,method=method,options={'gtol':gtol,'ftol':ftol,'maxiter':maxiter,'maxfun':maxfun})
+    #res = minimize(func,y0,jac=grad,method=method,options={'gtol':1e-10,'ftol':1e-20,'maxiter':maxiter,'maxfun':maxfun})
     #z = res.x
     z = opt.optimize(y0)
   except:
-    z = func.X[-1]
+    idx = np.argmin(func.fX)
+    z = func.X[idx]
     pass
   X = func.X
   fX = func.fX
   fopt = np.min(fX)
   print(f"{method}: {fopt}")
+  print("L-BFGS-B NLOPT return code: ",opt.last_optimize_result())
   method_data = {}
   method_data['method'] = method
   method_data['X'] = X
@@ -169,9 +170,10 @@ for pname in problems['name']:
     opt = nlopt.opt(nlopt.LD_LBFGS, dim)
     opt.set_min_objective(objective_with_grad)
     opt.set_maxeval(maxfun)
-    opt.set_ftol_rel(ftol)
-    opt.set_ftol_abs(ftol)
-    opt.set_xtol_rel(xtol)
+    opt.set_ftol_abs(0)
+    opt.set_ftol_rel(0)
+    opt.set_xtol_abs(0)
+    opt.set_xtol_rel(0)
     try:
       z = opt.optimize(sig.inv(to_unit_cube(y0,lb,ub)))
     except:
@@ -221,8 +223,11 @@ for pname in problems['name']:
       px = project(yy,lb,ub)
   
       Dpi = 0.0*np.zeros_like(yy)
-      idx_int = np.logical_and(yy<ub-bndry_tol,yy>lb+bndry_tol)
-      Dpi[idx_int] = 1.0
+      #idx_int = np.logical_and(yy<ub-bndry_tol,yy>lb+bndry_tol)
+      #Dpi[idx_int] = 1.0
+      # TODO: consider changing this to a projected gradient plus distance
+      idx_feas = np.logical_and(yy<=ub,yy>=lb)
+      Dpi[idx_feas] = 1.0
       gg = np.copy(Dpi*grad(project(yy,lb,ub)))
       gg += (yy-px)/np.linalg.norm(yy-px)
       return np.copy(gg)
