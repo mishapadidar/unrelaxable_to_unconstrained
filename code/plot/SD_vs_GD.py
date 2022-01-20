@@ -65,19 +65,19 @@ J = np.diag(sig.jac(x0))
 #x1 = np.copy(linesearch(x0,(1.0/J/J)*ft_grad(x0),1.0,30))
 x1 = np.copy(linesearch(x0,(1.0/J/J)*ft_grad(x0),0.1,50))
 step = x1-x0
-ax2.arrow(x0[0],x0[1],step[0],step[1],color='C0',width=80.0,head_width=250,head_length=280,head_starts_at_zero=False)
+ax2.arrow(x0[0],x0[1],step[0],step[1],color='C0',width=80.0,lw=3,head_width=250,head_length=280,head_starts_at_zero=False)
 y1 = from_unit_cube(sig(x1),lb,ub)
 step = y1-y0
-ax1.arrow(y0[0],y0[1],step[0],step[1],color='C0',width=0.04,head_starts_at_zero=False)
+ax1.arrow(y0[0],y0[1],step[0],step[1],color='C0',width=0.04,lw=3,head_starts_at_zero=False)
 
 # plot gradient descent step
 #x1 = np.copy(linesearch(x0,ft_grad(x0),5e6,30))
 x1 = np.copy(linesearch(x0,ft_grad(x0),5e5,50))
 step = x1-x0
-ax2.arrow(x0[0],x0[1],step[0],step[1],color='C1',width=80.0,head_width=250,head_length=280,head_starts_at_zero=False)
+ax2.arrow(x0[0],x0[1],step[0],step[1],color='C1',width=80.0,lw=1.5,head_width=250,head_length=280,head_starts_at_zero=False)
 y1 = from_unit_cube(sig(x1),lb,ub)
 step = y1-y0
-ax1.arrow(y0[0],y0[1],step[0],step[1],color='C1',width=0.04,head_starts_at_zero=False)
+ax1.arrow(y0[0],y0[1],step[0],step[1],color='C1',width=0.04,lw=1.5,head_starts_at_zero=False)
 
 """
 # plot the arrows at the second point
@@ -90,19 +90,19 @@ J = np.diag(sig.jac(x0))
 #x1 = np.copy(linesearch(x0,(1.0/J/J)*ft_grad(x0),1.0,30))
 x1 = np.copy(linesearch(x0,(1.0/J/J)*ft_grad(x0),0.1,50))
 step = x1-x0
-ax2.arrow(x0[0],x0[1],step[0],step[1],color='C0',width=90.0,head_width=250,head_length=250,head_starts_at_zero=False)
+ax2.arrow(x0[0],x0[1],step[0],step[1],color='C0',width=90.0,lw=3,head_width=250,head_length=250,head_starts_at_zero=False)
 y1 = from_unit_cube(sig(x1),lb,ub)
 step = y1-y0
-ax1.arrow(y0[0],y0[1],step[0],step[1],color='C0',width=0.04,head_starts_at_zero=False)
+ax1.arrow(y0[0],y0[1],step[0],step[1],color='C0',width=0.04,lw=3,head_starts_at_zero=False)
 
 # plot gradient descent step
 #x1 = np.copy(linesearch(x0,ft_grad(x0),5e6,30))
 x1 = np.copy(linesearch(x0,ft_grad(x0),5e5,50))
 step = x1-x0
-ax2.arrow(x0[0],x0[1],step[0],step[1],color='C1',width=90.0,head_width=250,head_length=250,head_starts_at_zero=False)
+ax2.arrow(x0[0],x0[1],step[0],step[1],color='C1',width=90.0,lw=1.5,head_width=250,head_length=250,head_starts_at_zero=False)
 y1 = from_unit_cube(sig(x1),lb,ub)
 step = y1-y0
-ax1.arrow(y0[0],y0[1],step[0],step[1],color='C1',width=0.03,head_starts_at_zero=False)
+ax1.arrow(y0[0],y0[1],step[0],step[1],color='C1',width=0.03,lw=1.5,head_starts_at_zero=False)
 
 """
 make the contours
@@ -122,11 +122,12 @@ ax1.contour(X,Y,Z,levels=levels,alpha=0.7)
 #ax1.set_ylim(-0.1,1.1)
 ax1.set_xlim(lb[0]-0.2,ub[0]+0.2)
 ax1.set_ylim(lb[1]-0.2,ub[1]+0.2)
-ax1.scatter(*f.minimum,marker='*',s=80,color='r')
+ax1.scatter(*f.minimum,marker='*',s=200,color='r',edgecolor='k',zorder=10)
 ax1.set_xticks([])
 ax1.set_yticks([])
+# ax1.axis('off')  # command for hiding the outer box on the left plot.
 # Create a Rectangle patch
-rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=1,edgecolor='k',facecolor='none')
+rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=3,edgecolor='k',facecolor='none')
 ax1.add_patch(rect)
 
 # plotting bounds in x-domain
@@ -143,10 +144,11 @@ levels=[3.0,50]
 levels=np.append(levels,np.linspace(0.0,np.max(Z),20))
 levels = np.sort(np.unique(levels))
 ax2.contour(X,Y,Z,levels=levels,alpha=0.7)
-ax2.scatter(*sig.inv(to_unit_cube(f.minimum,lb,ub)),marker='*',s=80,color='r')
+ax2.scatter(*sig.inv(to_unit_cube(f.minimum,lb,ub)),marker='*',s=200,color='r',edgecolor='k',zorder=10)
 ax2.set_xticks([])
 ax2.set_yticks([])
 ax2.set_xlim(x_lb[0],x_ub[0])
 ax2.set_ylim(x_lb[1],x_ub[1])
 #ax.set_ylim(-0.1,1.1)
-plt.show()
+# plt.show()
+plt.savefig('fig4.png',bbox_inches='tight',dpi=300)
