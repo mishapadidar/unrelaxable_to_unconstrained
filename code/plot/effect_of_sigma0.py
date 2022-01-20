@@ -12,6 +12,8 @@ from rosenbrock import Rosenbrock
 from convex_quadratic import ConvexQuadratic
 from sigup import *
 
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
 plt.rc('text.latex', preamble=r'\usepackage{amsmath,bm}')
 matplotlib.rcParams.update({'font.size': 16})
 
@@ -51,11 +53,11 @@ for ii,sigma0 in enumerate(sigmas):
   print("Optimal Value is ",f(z))
   print("Minima Found is ",z)
   print("Distance to Optima: ",np.linalg.norm(z- f.minimum))
-  ax1.plot(X[:,0],X[:,1],markers[ii],linewidth=3,label=f'$\sigma_0: {sigma0}$')
-  ax2.plot(range(1,len(fX)+1),fX,markers[ii],linewidth=3,label=f'$\sigma_0: {sigma0}$')
+  ax1.plot(X[:,0],X[:,1],markers[ii],markersize=10,linewidth=3,label=f'$\sigma_0: {sigma0}$')
+  ax2.plot(range(1,len(fX)+1),fX,markers[ii],markersize=10,linewidth=3,label=f'$\sigma_0: {sigma0}$')
 
 # plot f
-ax1.scatter(*f.minimum,color='r',marker='*',s=120,label='minima',zorder=10)
+ax1.scatter(*f.minimum,color='r',marker='*',edgecolors='black',s=300,label='minima',zorder=10)
 X,Y = np.meshgrid(np.linspace(lb[0],ub[0],100), np.linspace(lb[1],ub[1],100))
 #ax.contour(X,Y,f([X,Y]),100)
 Z = np.zeros_like(X)
@@ -71,7 +73,7 @@ ax1.legend()
 #ax2.set_xscale('log')
 ax2.set_yscale('log')
 ax2.set_xlabel('Number of Evaluations')
-ax2.set_ylabel(r'$f\,(S(\mathbf{x}))$')
+ax2.set_ylabel(r'$f\,(S(\bm{x}))$')
 ax1.legend(loc=9,mode='expand',bbox_to_anchor=(-0.02, 1.02, 1.2, .102),ncol=4,prop={'size': 13})
 ax1.set_xticks([0.0,0.5,1.0])
 ax1.set_yticks([0.0,0.5,1.0])
@@ -82,4 +84,6 @@ plt.rc('grid', linestyle="-", color='black')
 rect = Rectangle((0,0),1,1,linewidth=1,edgecolor='k',facecolor='none')
 ax1.add_patch(rect)
 fig.tight_layout()
-plt.show()
+# plt.show()
+plt.savefig('fig3.png',bbox_inches='tight',dpi=300)
+
