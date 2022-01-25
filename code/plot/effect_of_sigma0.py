@@ -81,7 +81,7 @@ ax2.set_ylim(0.8,150)
 ax2.grid()
 plt.rc('grid', linestyle="-", color='black')
 # Create a Rectangle patch
-rect = Rectangle((0,0),1,1,linewidth=1,edgecolor='k',facecolor='none')
+rect = Rectangle((0,0),1,1,linewidth=3,edgecolor='k',facecolor='none')
 ax1.add_patch(rect)
 fig.tight_layout()
 # plt.show()
