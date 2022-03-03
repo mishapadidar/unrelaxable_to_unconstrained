@@ -11,6 +11,8 @@ from quadratic1 import Quadratic1
 from rescale import *
 import matplotlib
 
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
 plt.rc('text.latex', preamble=r'\usepackage{amsmath,bm}')
 matplotlib.rcParams.update({'font.size': 16})
 
@@ -65,11 +67,13 @@ ax1.set_ylim(lb[1]-shift,ub[1]+shift)
 levels=[3.0,50]
 levels=np.append(levels,np.linspace(0.0,np.max(Z),15))
 levels = np.sort(np.unique(levels))
+ax1.set_xticks([0,1])
+ax1.set_yticks([0,1])
 ax1.contour(X,Y,Z,levels=levels)
 ax1.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',s=80,color='r')
 ax1.set_title('$f(x)$')
 # Create a Rectangle patch
-rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=1,edgecolor='k',facecolor='none',zorder=10)
+rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=3,edgecolor='k',facecolor='none',zorder=10)
 ax1.add_patch(rect)
 
 # plot penalty
@@ -87,11 +91,13 @@ levels=np.append(levels,np.linspace(0.0,np.max(Z),20))
 levels = np.sort(np.unique(levels))
 ax2.set_xlim(lb[0]-shift,ub[0]+shift)
 ax2.set_ylim(lb[1]-shift,ub[1]+shift)
+ax2.set_xticks([0,1])
+ax2.set_yticks([0,1])
 ax2.contour(X,Y,Z,levels=levels)
 ax2.scatter(*to_unit_cube(rosen.minimum,lbr,ubr),marker='*',s=80,color='r')
 ax2.set_title('PPM')
 # Create a Rectangle patch
-rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=1,edgecolor='k',facecolor='none',zorder=10)
+rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=3,edgecolor='k',facecolor='none',zorder=10)
 ax2.add_patch(rect)
 
 # plot relfection
@@ -112,9 +118,11 @@ ref_min4 = np.ones(2)+ (np.ones(2) - ref_min)
 ax3.scatter(*ref_min2,marker='*',s=80,color='r')
 ax3.scatter(*ref_min3,marker='*',s=80,color='r')
 ax3.scatter(*ref_min4,marker='*',s=80,color='r')
+ax3.set_xticks([0,1])
+ax3.set_yticks([0,1])
 ax3.set_title('Reflection')
 # Create a Rectangle patch
-rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=1,edgecolor='k',facecolor='none',zorder=10)
+rect = Rectangle((lb[0],lb[1]),(ub-lb)[0],(ub-lb)[1],linewidth=3,edgecolor='k',facecolor='none',zorder=10)
 ax3.add_patch(rect)
 
 # plot ft
@@ -128,8 +136,11 @@ levels=np.append(levels,np.linspace(0.0,np.max(Z),15))
 levels = np.sort(np.unique(levels))
 ax4.contour(X,Y,Z,levels=levels)
 ax4.scatter(*sig.inv(to_unit_cube(rosen.minimum,lbr,ubr)),marker='*',s=80,color='r')
+ax4.set_xticks([-5,0,5])
+ax4.set_yticks([-5,0,5])
 ax4.set_title('Sigmoid')
 
-fig.tight_layout(pad=2.0)
-plt.show()
+# fig.tight_layout(pad=2.0)
+# plt.show()
+plt.savefig('fig1.png',bbox_inches='tight',dpi=300)
 
