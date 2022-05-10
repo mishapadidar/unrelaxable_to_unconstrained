@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import glob
 import pickle
 import matplotlib
-#matplotlib.rcParams['text.usetex'] = True
+matplotlib.rcParams['text.usetex'] = True
 plt.rc('text.latex', preamble=r'\usepackage{amsmath,bm}')
 matplotlib.rcParams.update({'font.size': 18})
 
