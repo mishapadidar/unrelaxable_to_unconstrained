@@ -138,7 +138,7 @@ ax4.contour(X,Y,Z,levels=levels)
 ax4.scatter(*sig.inv(to_unit_cube(rosen.minimum,lbr,ubr)),marker='*',s=80,color='r')
 ax4.set_xticks([-5,0,5])
 ax4.set_yticks([-5,0,5])
-ax4.set_title('Sigmoid')
+ax4.set_title('Sigmoidal')
 
 # fig.tight_layout(pad=2.0)
 # plt.show()
