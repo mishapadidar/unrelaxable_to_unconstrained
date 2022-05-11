@@ -65,19 +65,27 @@ J = np.diag(sig.jac(x0))
 #x1 = np.copy(linesearch(x0,(1.0/J/J)*ft_grad(x0),1.0,30))
 x1 = np.copy(linesearch(x0,(1.0/J/J)*ft_grad(x0),0.1,50))
 step = x1-x0
-ax2.arrow(x0[0],x0[1],step[0],step[1],color='C0',width=80.0,lw=3,head_width=250,head_length=280,head_starts_at_zero=False)
+#ax2.arrow(x0[0],x0[1],step[0],step[1],color='C0',width=80.0,lw=3,head_width=250,head_length=280,head_starts_at_zero=False)
+ax2.annotate('',xy=x0,xytext=x0+step, arrowprops={'arrowstyle': '-', 'ls':'dashed','edgecolor':'C0','facecolor':None,'linewidth':3,'shrinkA':5,'shrinkB':0})
+ax2.annotate('',xy=x0,xytext=x0+step, arrowprops={'arrowstyle': '<|-, head_width=0.3, head_length=0.6', 'ls':'solid','edgecolor':None,'facecolor':"C0","linewidth":0,'shrinkA':0,'shrinkB':0})
 y1 = from_unit_cube(sig(x1),lb,ub)
 step = y1-y0
-ax1.arrow(y0[0],y0[1],step[0],step[1],color='C0',width=0.04,lw=3,head_starts_at_zero=False)
+#ax1.arrow(y0[0],y0[1],step[0],step[1],color='C0',width=0.04,lw=3,head_starts_at_zero=False)
+ax1.annotate('',xy=y0,xytext=y0+step, arrowprops={'arrowstyle': '-', 'ls':'dashed','edgecolor':'C0','facecolor':None,'linewidth':3,'shrinkA':5,'shrinkB':0})
+ax1.annotate('',xy=y0,xytext=y0+step, arrowprops={'arrowstyle': '<|-, head_width=0.3, head_length=0.6', 'ls':'solid','edgecolor':None,'facecolor':"C0","linewidth":0,'shrinkA':0,'shrinkB':0})
 
 # plot gradient descent step
 #x1 = np.copy(linesearch(x0,ft_grad(x0),5e6,30))
 x1 = np.copy(linesearch(x0,ft_grad(x0),5e5,50))
 step = x1-x0
-ax2.arrow(x0[0],x0[1],step[0],step[1],color='C1',width=80.0,lw=1.5,head_width=250,head_length=280,head_starts_at_zero=False)
+#ax2.arrow(x0[0],x0[1],step[0],step[1],color='C1',width=80.0,lw=1.5,head_width=250,head_length=280,head_starts_at_zero=False)
+ax2.annotate('',xy=x0,xytext=x0+step, arrowprops={'arrowstyle': '-', 'ls':'solid','edgecolor':'C1','facecolor':None,'linewidth':3,'shrinkA':5,'shrinkB':0})
+ax2.annotate('',xy=x0,xytext=x0+step, arrowprops={'arrowstyle': '<|-, head_width=0.3, head_length=0.6', 'ls':'solid','edgecolor':None,'facecolor':"C1","linewidth":0,'shrinkA':0,'shrinkB':0})
 y1 = from_unit_cube(sig(x1),lb,ub)
 step = y1-y0
-ax1.arrow(y0[0],y0[1],step[0],step[1],color='C1',width=0.04,lw=1.5,head_starts_at_zero=False)
+#ax1.arrow(y0[0],y0[1],step[0],step[1],color='C1',width=0.04,lw=1.5,head_starts_at_zero=False)
+ax1.annotate('',xy=y0,xytext=y0+step, arrowprops={'arrowstyle': '-', 'ls':'solid','edgecolor':'C1','facecolor':None,'linewidth':3,'shrinkA':5,'shrinkB':0})
+ax1.annotate('',xy=y0,xytext=y0+step, arrowprops={'arrowstyle': '<|-, head_width=0.3, head_length=0.6', 'ls':'solid','edgecolor':None,'facecolor':"C1","linewidth":0,'shrinkA':0,'shrinkB':0})
 
 """
 # plot the arrows at the second point
@@ -90,19 +98,27 @@ J = np.diag(sig.jac(x0))
 #x1 = np.copy(linesearch(x0,(1.0/J/J)*ft_grad(x0),1.0,30))
 x1 = np.copy(linesearch(x0,(1.0/J/J)*ft_grad(x0),0.1,50))
 step = x1-x0
-ax2.arrow(x0[0],x0[1],step[0],step[1],color='C0',width=90.0,lw=3,head_width=250,head_length=250,head_starts_at_zero=False)
+#ax2.arrow(x0[0],x0[1],step[0],step[1],linestyle='dashed',color='C0',width=90.0,lw=3,head_width=250,head_length=250,head_starts_at_zero=False)
+ax2.annotate('',xy=x0,xytext=x0+step, arrowprops={'arrowstyle': '-', 'ls':'dashed','edgecolor':'C0','facecolor':None,'linewidth':3,'shrinkA':5,'shrinkB':0})
+ax2.annotate('',xy=x0,xytext=x0+step, arrowprops={'arrowstyle': '<|-, head_width=0.3, head_length=0.6', 'ls':'solid','edgecolor':None,'facecolor':"C0","linewidth":0,'shrinkA':0,'shrinkB':0})
 y1 = from_unit_cube(sig(x1),lb,ub)
 step = y1-y0
-ax1.arrow(y0[0],y0[1],step[0],step[1],color='C0',width=0.04,lw=3,head_starts_at_zero=False)
+#ax1.arrow(y0[0],y0[1],step[0],step[1],linestyle='dashed',color='C0',width=0.04,lw=3,head_starts_at_zero=False)
+ax1.annotate('',xy=y0,xytext=y0+step, arrowprops={'arrowstyle': '-', 'ls':'dashed','edgecolor':'C0','facecolor':None,'linewidth':3,'shrinkA':5,'shrinkB':0})
+ax1.annotate('',xy=y0,xytext=y0+step, arrowprops={'arrowstyle': '<|-, head_width=0.3, head_length=0.6', 'ls':'solid','edgecolor':None,'facecolor':"C0","linewidth":0,'shrinkA':0,'shrinkB':0})
 
 # plot gradient descent step
 #x1 = np.copy(linesearch(x0,ft_grad(x0),5e6,30))
 x1 = np.copy(linesearch(x0,ft_grad(x0),5e5,50))
 step = x1-x0
-ax2.arrow(x0[0],x0[1],step[0],step[1],color='C1',width=90.0,lw=1.5,head_width=250,head_length=250,head_starts_at_zero=False)
+#ax2.arrow(x0[0],x0[1],step[0],step[1],color='C1',width=90.0,lw=1.5,head_width=250,head_length=250,head_starts_at_zero=False)
+ax2.annotate('',xy=x0,xytext=x0+step, arrowprops={'arrowstyle': '-', 'ls':'solid','edgecolor':'C1','facecolor':None,'linewidth':3,'shrinkA':5,'shrinkB':0})
+ax2.annotate('',xy=x0,xytext=x0+step, arrowprops={'arrowstyle': '<|-, head_width=0.3, head_length=0.6', 'ls':'solid','edgecolor':None,'facecolor':"C1","linewidth":0,'shrinkA':0,'shrinkB':0})
 y1 = from_unit_cube(sig(x1),lb,ub)
 step = y1-y0
-ax1.arrow(y0[0],y0[1],step[0],step[1],color='C1',width=0.03,lw=1.5,head_starts_at_zero=False)
+#ax1.arrow(y0[0],y0[1],step[0],step[1],color='C1',width=0.03,lw=1.5,head_starts_at_zero=False)
+ax1.annotate('',xy=y0,xytext=y0+step, arrowprops={'arrowstyle': '-', 'ls':'solid','edgecolor':'C1','facecolor':None,'linewidth':3,'shrinkA':5,'shrinkB':0})
+ax1.annotate('',xy=y0,xytext=y0+step, arrowprops={'arrowstyle': '<|-, head_width=0.3, head_length=0.6', 'ls':'solid','edgecolor':None,'facecolor':"C1","linewidth":0,'shrinkA':0,'shrinkB':0})
 
 """
 make the contours
